@@ -16,6 +16,7 @@ func main() {
 	m.Map(initDb())
 	m.Use(martini.Logger())
 	m.Use(render.Renderer())
+	m.Use(martini.Static("public"))
 	r := martini.NewRouter()
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, CreateComment)
