@@ -5,6 +5,7 @@ import (
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/coopernurse/gorp"
+	"github.com/martini-contrib/cors"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
 )
@@ -14,6 +15,9 @@ var m *martini.Martini
 func main() {
 	m = martini.New()
 	m.Map(initDb())
+	m.Use(cors.Allow(&cors.Options{
+		AllowOrigins: []string{"http*"},
+	}))
 	m.Use(martini.Logger())
 	m.Use(render.Renderer())
 	m.Use(martini.Static("public"))

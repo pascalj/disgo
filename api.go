@@ -9,7 +9,7 @@ import (
 
 func GetComments(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
 	var comments []Comment
-	dbmap.Select(&comments, "select * from comments")
+	dbmap.Select(&comments, "select * from comments order by created asc")
 	ren.JSON(200, comments)
 }
 
@@ -43,7 +43,7 @@ func CreateComment(ren render.Render, req *http.Request, dbmap *gorp.DbMap) {
 	if err != nil {
 		ren.JSON(400, err.Error())
 	} else {
-		ren.JSON(200, comment)
+		ren.JSON(200, &comment)
 	}
 }
 
