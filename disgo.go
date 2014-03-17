@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
+	"github.com/martini-contrib/binding"
 	"github.com/coopernurse/gorp"
 	"github.com/martini-contrib/cors"
 	_ "github.com/mattn/go-sqlite3"
@@ -19,11 +20,12 @@ func main() {
 		AllowOrigins: []string{"http*"},
 	}))
 	m.Use(martini.Logger())
+	m.Use(MapView)
 	m.Use(render.Renderer())
 	m.Use(martini.Static("public"))
 	r := martini.NewRouter()
 	r.Get(`/comments/:id`, GetComment)
-	r.Post(`/comments`, CreateComment)
+	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
 	r.Delete(`/comments/:id`, DestroyComment)
 	m.Action(r.Handle)

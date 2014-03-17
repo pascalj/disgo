@@ -7,23 +7,19 @@ import (
 )
 
 type Comment struct {
-	Id       int64 `json:"id"`
-	Created  int64
-	Email    string
-	Title    string
-	Body     string
-	Url      string
-	ParentId int64
+	Id       int64 `form:"-"`
+	Created  int64 `form:"-"`
+	Email    string `binding:"required" form:"email"`
+	Body     string `binding:"required" form:"body"`
+	Url      string `binding:"required" form:"url"`
 }
 
-func NewComment(email, title, body, url, parentId string) Comment {
+func NewComment(email, title, body, url string) Comment {
 	return Comment{
 		Created:  time.Now().Unix(),
 		Email:    email,
-		Title:    title,
 		Body:     body,
 		Url:      url,
-		ParentId: 0,
 	}
 }
 

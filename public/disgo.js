@@ -7,7 +7,6 @@
 
 function loadDisgo() {
   $.each($('[data-disgo-url]'), function(i, el) {
-    console.log(el)
     appendForm(el)
     initializeComments(el)
   });
@@ -28,10 +27,15 @@ function loadDisgo() {
 
   function appendForm(el) {
     var url = $(el).attr('data-disgo-url')
-    var form = document.createElement('div')
+    var form = document.createElement('form')
     var body = document.createElement('textarea')
     var submit = document.createElement('button')
     var email = document.createElement('input')
+    var urlField = document.createElement('input')
+    urlField.setAttribute('type', 'hidden')
+    urlField.setAttribute('name', 'url')
+    urlField.setAttribute('value', url)
+    body.setAttribute('name', 'body')
     email.setAttribute('type', 'text')
     email.setAttribute('name', 'email')
     submit.textContent = 'Comment'
@@ -42,6 +46,7 @@ function loadDisgo() {
     form.appendChild(email)
     form.appendChild(body)
     form.appendChild(submit)
+    form.appendChild(urlField)
     el.appendChild(form)
   }
 
@@ -55,7 +60,8 @@ function loadDisgo() {
   }
 
   function submitComment(el) {
-    promise.post('http://localhost:3000/comments', {body: $("textarea", el).val()}).then(function(error, text, xhr) {
+    var form = $("form", el)
+    promise.post('http://localhost:3000/comments', form.serialize()).then(function(error, text, xhr) {
         if (error) {
             alert('Error ' + xhr.status);
             return;
