@@ -42,34 +42,18 @@ func main() {
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
-	r.Get(`/comments/new`, Form)
 	r.Delete(`/comments/:id`, DestroyComment)
 	m.Action(r.Handle)
 	m.Run()
 }
 
-func Form(ren render.Render) {
-	ren.HTML(200, "form", nil)
-}
-
 func initDb() *gorp.DbMap {
-	// connect to db using standard Go database/sql API
-	// use whatever database/sql driver you wish
 	db, err := sql.Open("sqlite3", "/tmp/test_db.bin")
 	checkErr(err, "sql.Open failed")
-
-	// construct a gorp DbMap
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
-
-	// add a table, setting the table name to 'posts' and
-	// specifying that the Id property is an auto incrementing PK
 	dbmap.AddTableWithName(Comment{}, "comments").SetKeys(true, "Id")
-
-	// create the table. in a production system you'd generally
-	// use a migration tool, or create the tables via scripts
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create tables failed")
-
 	return dbmap
 }
 

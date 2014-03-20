@@ -1,9 +1,23 @@
-<div class="comments">
-  {{range .}}
-  <div class="comment">
-    <div class="date">{{.Created | formatTime}}</div>
-    <div class="avatar"><img src="{{.Email | gravatar}}" alt=""/></div>
-    {{.Body}}
+<div class="disgo-wrapper">
+  <form class="comments-form">
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="text" name="email" placeholder="Email" required>
+    <textarea name="body" placeholder="Your comment" required></textarea>
+    <button>Comment</button>
+    <input type="hidden" name="url" value="">
+  </form>
+
+  <div class="comments">
+    {{range .}}
+    <div class="comment">
+      <div class="date">{{.Created | formatTime}}</div>
+      <div class="name">{{.Name}}</div>
+      <img class="avatar" src="{{.Email | gravatar}}" alt=""/>
+
+      <div class="comment-text">
+        {{.Body}}
+      </div>
+    </div>
+    {{end}}
   </div>
-  {{end}}
 </div>

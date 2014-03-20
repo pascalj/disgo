@@ -1,3 +1,9 @@
 <div class="comment">
-  {{.Body}}
+  <div class="date">{{.Created | formatTime}}</div>
+  <div class="name">{{.Name}}</div>
+  <img class="avatar" src="{{.Email | gravatar}}" alt=""/>
+
+  <div class="comment-text">
+    {{.Body}}
+  </div>
 </div>

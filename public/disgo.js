@@ -7,7 +7,6 @@
 
 function loadDisgo() {
   $.each($('[data-disgo-url]'), function(i, el) {
-    appendForm(el)
     initializeComments(el)
   });
 
@@ -19,42 +18,27 @@ function loadDisgo() {
             return;
         }
         el.innerHTML += comments
+        $('[name=url]', el).attr('value', url)
+        $('form', el).on('submit', function(e) {
+          e.preventDefault()
+          submitComment(el)
+        })
     });
-  }
-
-  function appendForm(el) {
-    var url = $(el).attr('data-disgo-url')
-    var form = document.createElement('form')
-    var body = document.createElement('textarea')
-    var submit = document.createElement('button')
-    var email = document.createElement('input')
-    var urlField = document.createElement('input')
-    urlField.setAttribute('type', 'hidden')
-    urlField.setAttribute('name', 'url')
-    urlField.setAttribute('value', url)
-    body.setAttribute('name', 'body')
-    email.setAttribute('type', 'text')
-    email.setAttribute('name', 'email')
-    submit.textContent = 'Comment'
-    submit.addEventListener('click', function(e) {
-      e.preventDefault()
-      submitComment(el)
-    })
-    form.appendChild(email)
-    form.appendChild(body)
-    form.appendChild(submit)
-    form.appendChild(urlField)
-    el.appendChild(form)
   }
 
   function submitComment(el) {
     var form = $("form", el)
-    promise.post('http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}).then(function(error, comment, xhr) {
+    promise.post('http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}).then(function(error, result, xhr) {
         if (error) {
-            alert('Error ' + xhr.status);
-            return;
+            var errors = JSON.parse(result);
+            for (fieldName in errors['fields']) {
+              var field = $('[name=' + fieldName + ']', el)
+              if (field) field.addClass('error')
+            }
+          return
         }
-        el.innerHTML += comment
+        el.innerHTML += result
+        $('form', el).reset()
     })
   }
 }

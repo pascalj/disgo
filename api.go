@@ -1,14 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
-	"github.com/martini-contrib/binding"
 	"github.com/coopernurse/gorp"
+	"github.com/martini-contrib/binding"
 	"net/http"
-	"time"
-	"fmt"
 	"strings"
+	"time"
 )
 
 func GetComments(ren render.Render, view View, params martini.Params, dbmap *gorp.DbMap) {
@@ -68,12 +68,15 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 }
 
 func (comment Comment) Validate(errors *binding.Errors, req *http.Request) {
-    if len(comment.Body) == 0 {
-        errors.Fields["body"] = "You must enter a comment text."
-    }
-    if len(comment.Email) == 0 {
-        errors.Fields["email"] = "Please enter an email address."
-    }
+	if len(comment.Name) == 0 {
+		errors.Fields["name"] = "Please enter a name."
+	}
+	if len(comment.Body) == 0 {
+		errors.Fields["body"] = "You must enter a comment text."
+	}
+	if len(comment.Email) == 0 {
+		errors.Fields["email"] = "Please enter an email address."
+	}
 }
 
 func MapView(c martini.Context, w http.ResponseWriter, r *http.Request) {
@@ -83,11 +86,11 @@ func MapView(c martini.Context, w http.ResponseWriter, r *http.Request) {
 		accept = strings.Split(accept[0], ",")
 	}
 	switch accept[0] {
-		case "text/html":
-			c.MapTo(HtmlView{}, (*View)(nil))
-			w.Header().Set("Content-Type", "text/html")
-		default:
-			c.MapTo(JsonView{}, (*View)(nil))
-			w.Header().Set("Content-Type", "application/json")
+	case "text/html":
+		c.MapTo(HtmlView{}, (*View)(nil))
+		w.Header().Set("Content-Type", "text/html")
+	default:
+		c.MapTo(JsonView{}, (*View)(nil))
+		w.Header().Set("Content-Type", "application/json")
 	}
 }
