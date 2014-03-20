@@ -4,11 +4,14 @@ import (
 	"database/sql"
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
-	"github.com/martini-contrib/binding"
 	"github.com/coopernurse/gorp"
+	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/cors"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/ungerik/go-gravatar"
+	"html/template"
 	"log"
+	"time"
 )
 
 var m *martini.Martini
@@ -21,15 +24,32 @@ func main() {
 	}))
 	m.Use(martini.Logger())
 	m.Use(MapView)
-	m.Use(render.Renderer())
+	m.Use(render.Renderer(render.Options{
+		Funcs: []template.FuncMap{
+			{
+				"formatTime": func(args ...interface{}) string {
+					t1 := time.Unix(args[0].(int64), 0)
+					return t1.Format(time.Stamp)
+				},
+				"gravatar": func(args ...interface{}) string {
+					return gravatar.Url(args[0].(string))
+				},
+			},
+		},
+	}))
 	m.Use(martini.Static("public"))
 	r := martini.NewRouter()
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
+	r.Get(`/comments/new`, Form)
 	r.Delete(`/comments/:id`, DestroyComment)
 	m.Action(r.Handle)
 	m.Run()
+}
+
+func Form(ren render.Render) {
+	ren.HTML(200, "form", nil)
 }
 
 func initDb() *gorp.DbMap {

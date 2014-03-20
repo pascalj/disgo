@@ -13,15 +13,12 @@ function loadDisgo() {
 
   function initializeComments(el) {
     var url = $(el).attr('data-disgo-url')
-    promise.get('http://localhost:3000/comments', {url: url}).then(function(error, text, xhr) {
+    promise.get('http://localhost:3000/comments', {url: url}, {"Accept": "text/html"}).then(function(error, comments, xhr) {
         if (error) {
             alert('Error ' + xhr.status);
             return;
         }
-        var comments = JSON.parse(text)
-        $.each(comments, function(i, comment) {
-          appendComment(el, comment)
-        })
+        el.innerHTML += comments
     });
   }
 
@@ -50,24 +47,14 @@ function loadDisgo() {
     el.appendChild(form)
   }
 
-  function appendComment(el, comment) {
-    var avatar = document.createElement('img')
-    avatar.setAttribute('src', comment.avatar)
-    var body = document.createElement('div')
-    body.textContent = comment.body
-    el.appendChild(body)
-    el.appendChild(avatar)
-  }
-
   function submitComment(el) {
     var form = $("form", el)
-    promise.post('http://localhost:3000/comments', form.serialize()).then(function(error, text, xhr) {
+    promise.post('http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}).then(function(error, comment, xhr) {
         if (error) {
             alert('Error ' + xhr.status);
             return;
         }
-        var comment = JSON.parse(text)
-        appendComment(el, comment)
+        el.innerHTML += comment
     })
   }
 }

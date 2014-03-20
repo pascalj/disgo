@@ -1,5 +1,9 @@
-{{range .}}
-<div>
-  {{.Body}}
+<div class="comments">
+  {{range .}}
+  <div class="comment">
+    <div class="date">{{.Created | formatTime}}</div>
+    <div class="avatar"><img src="{{.Email | gravatar}}" alt=""/></div>
+    {{.Body}}
+  </div>
+  {{end}}
 </div>
-{{end}}
