@@ -6,14 +6,18 @@ import (
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/coopernurse/gorp"
 	"github.com/martini-contrib/binding"
+	"github.com/nu7hatch/gouuid"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func GetComments(ren render.Render, view View, params martini.Params, dbmap *gorp.DbMap) {
+func GetComments(res http.ResponseWriter, ren render.Render, view View, params martini.Params, dbmap *gorp.DbMap) {
 	var comments []Comment
 	dbmap.Select(&comments, "select * from comments order by created asc")
+	randomId, _ := uuid.NewV4()
+	cookie := []string{"disgo_id=", randomId.String()}
+	res.Header().Add("Set-Cookie", strings.Join(cookie, ""))
 	if comments != nil {
 		view.RenderComments(comments, ren)
 	} else {
@@ -63,6 +67,8 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 		count, err := dbmap.Delete(comment)
 		if count != 1 || err != nil {
 			ren.JSON(500, err.Error())
+		} else {
+			ren.Redirect("/admin")
 		}
 	}
 }

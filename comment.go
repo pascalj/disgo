@@ -7,21 +7,25 @@ import (
 )
 
 type Comment struct {
-	Id      int64  `form:"-"`
-	Created int64  `form:"-"`
-	Email   string `binding:"required" form:"email"`
-	Name    string `binding:"required" form:"name"`
-	Body    string `binding:"required" form:"body"`
-	Url     string `binding:"required" form:"url"`
+	Id       int64  `form:"-"`
+	Created  int64  `form:"-"`
+	Email    string `binding:"required" form:"email"`
+	Name     string `binding:"required" form:"name"`
+	Body     string `binding:"required" form:"body"`
+	Url      string `binding:"required" form:"url"`
+	ClientIp string `form:"-"`
+	ClientId string `form:"-"`
 }
 
-func NewComment(email, name, title, body, url string) Comment {
+func NewComment(email, name, title, body, url, ip, id string) Comment {
 	return Comment{
-		Created: time.Now().Unix(),
-		Email:   email,
-		Name:    name,
-		Body:    body,
-		Url:     url,
+		Created:  time.Now().Unix(),
+		Email:    email,
+		Name:     name,
+		Body:     body,
+		Url:      url,
+		ClientIp: ip,
+		ClientId: id,
 	}
 }
 

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Disgo - Admin</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="/css/admin/normalize.min.css">
+        <link rel="stylesheet" href="/css/admin/foundation.min.css">
+    </head>
+    <body>
+        <div class="row">
+            <div class="large-12 columns">
+                <h1>Disgo</h1>
+            </div>
+            <div class="large-3 columns">
+                <ul class="side-nav">
+                    <li><a href="/admin">New comments</a></li>
+                </ul>
+            </div>
+            <div class="large-9 columns">
+                {{ yield }}
+            </div>
+        </div>
+    </body>
+</html>

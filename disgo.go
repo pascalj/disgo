@@ -7,6 +7,7 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/cors"
+	"github.com/martini-contrib/method"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
@@ -19,11 +20,14 @@ var m *martini.Martini
 func main() {
 	m = martini.New()
 	m.Map(initDb())
+	m.Use(martini.Static("public"))
 	m.Use(cors.Allow(&cors.Options{
-		AllowOrigins: []string{"http*"},
+		AllowOrigins:     []string{"http*"},
+		AllowCredentials: true,
 	}))
 	m.Use(martini.Logger())
 	m.Use(MapView)
+	m.Use(method.Override())
 	m.Use(render.Renderer(render.Options{
 		Funcs: []template.FuncMap{
 			{
@@ -37,12 +41,12 @@ func main() {
 			},
 		},
 	}))
-	m.Use(martini.Static("public"))
 	r := martini.NewRouter()
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
 	r.Delete(`/comments/:id`, DestroyComment)
+	r.Get(`/admin`, AdminIndex)
 	m.Action(r.Handle)
 	m.Run()
 }

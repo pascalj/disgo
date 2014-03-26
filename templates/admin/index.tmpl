@@ -1,0 +1,23 @@
+<div class="row">
+  <div class="12-large columns">
+    <h3>Newest comments</h3>
+    <div class="comments">
+      {{range .}}
+        <div class="comment row">
+          <div class="name large-3 columns">
+            <div class="date">{{.Created | formatTime}}</div>
+            <img class="avatar" src="{{.Email | gravatar}}" alt=""/><br>
+            {{.Name}}<br>
+            <form action="/comments/{{.Id}}" method="post">
+              <input name="_method" value="DELETE" type="hidden" />
+              <input type="submit" value="Delete" class="button alert tiny"/>
+            </form>
+          </div>
+          <div class="comment-text large-9 columns">
+            {{.Body}}
+          </div>
+        </div>
+      {{end}}
+    </div>
+  </div>
+</div>
