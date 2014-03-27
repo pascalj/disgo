@@ -6,22 +6,29 @@ import (
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/coopernurse/gorp"
 	"github.com/martini-contrib/binding"
-	"github.com/nu7hatch/gouuid"
+	"github.com/martini-contrib/sessions"
 	"net/http"
 	"strings"
 	"time"
 )
 
-func GetComments(res http.ResponseWriter, ren render.Render, view View, params martini.Params, dbmap *gorp.DbMap) {
+func GetComments(
+	res http.ResponseWriter,
+	ren render.Render,
+	view View,
+	params martini.Params,
+	dbmap *gorp.DbMap,
+	session sessions.Session) {
 	var comments []Comment
 	dbmap.Select(&comments, "select * from comments order by created asc")
-	randomId, _ := uuid.NewV4()
-	cookie := []string{"disgo_id=", randomId.String()}
-	res.Header().Add("Set-Cookie", strings.Join(cookie, ""))
 	if comments != nil {
-		view.RenderComments(comments, ren)
+		ctx := map[string]interface{}{
+			"email": session.Get("email"),
+			"name":  session.Get("name"),
+		}
+		view.RenderComments(comments, ctx, ren)
 	} else {
-		view.RenderComments([]Comment{}, ren)
+		view.RenderComments([]Comment{}, nil, ren)
 	}
 }
 
@@ -31,7 +38,7 @@ func GetComment(ren render.Render, view View, params martini.Params, dbmap *gorp
 		ren.JSON(404, nil)
 	} else {
 		comment := obj.(*Comment)
-		view.RenderComment(*comment, ren)
+		view.RenderComment(*comment, nil, ren)
 	}
 }
 
@@ -48,13 +55,15 @@ func UpdateComment(ren render.Render, params martini.Params, req *http.Request, 
 	}
 }
 
-func CreateComment(ren render.Render, view View, comment Comment, req *http.Request, dbmap *gorp.DbMap) {
+func CreateComment(ren render.Render, view View, comment Comment, req *http.Request, dbmap *gorp.DbMap, session sessions.Session) {
 	comment.Created = time.Now().Unix()
 	err := dbmap.Insert(&comment)
 	if err != nil {
 		ren.JSON(400, err.Error())
 	} else {
-		view.RenderComment(comment, ren)
+		session.Set("email", comment.Email)
+		session.Set("name", comment.Name)
+		view.RenderComment(comment, nil, ren)
 	}
 }
 

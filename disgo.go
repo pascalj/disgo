@@ -8,6 +8,7 @@ import (
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/method"
+	"github.com/martini-contrib/sessions"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
@@ -21,10 +22,9 @@ func main() {
 	m = martini.New()
 	m.Map(initDb())
 	m.Use(martini.Static("public"))
-	m.Use(cors.Allow(&cors.Options{
-		AllowOrigins:     []string{"http*"},
-		AllowCredentials: true,
-	}))
+
+	store := sessions.NewCookieStore([]byte("secret"))
+	m.Use(sessions.Sessions("session", store))
 	m.Use(martini.Logger())
 	m.Use(MapView)
 	m.Use(method.Override())
@@ -40,6 +40,10 @@ func main() {
 				},
 			},
 		},
+	}))
+	m.Use(cors.Allow(&cors.Options{
+		AllowOrigins:     []string{"http*"},
+		AllowCredentials: true,
 	}))
 	r := martini.NewRouter()
 	r.Get(`/comments/:id`, GetComment)

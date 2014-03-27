@@ -6,7 +6,7 @@ function loadDisgo() {
 
   function initializeComments(el) {
     var url = $(el).attr('data-disgo-url')
-    ajax('get', 'http://localhost:3000/comments', {url: url}, {"Accept": "text/html"}, function(status, result, xhr) {
+    ajax('GET', 'http://localhost:3000/comments', {url: url}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
         alert('Error ' + xhr.status);
         return;
@@ -22,8 +22,8 @@ function loadDisgo() {
 
   function submitComment(el) {
     var form = $("form", el)
-    ajax('post', 'http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}, function(error, result, xhr) {
-      if (error) {
+    ajax('POST', 'http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}, function(status, result, xhr) {
+      if (status != 200) {
         var errors = JSON.parse(result);
         for (fieldName in errors['fields']) {
           var field = $('[name=' + fieldName + ']', el)
@@ -44,7 +44,8 @@ function ajax(method, url, data, headers, handler) {
 
   if(invocation) {
     invocation.withCredentials = true;
-    invocation.open('GET', url, true);
+    invocation.open(method, url, true);
+    invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     for (headerName in headers) {
       invocation.setRequestHeader(headerName, headers[headerName])
     }
