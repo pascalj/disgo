@@ -52,6 +52,7 @@ func main() {
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
+	r.Post(`/comments/approve/:id`, ApproveComment)
 	r.Delete(`/comments/:id`, DestroyComment)
 	r.Get(`/admin`, RequireLogin, AdminIndex)
 	r.Get(`/login`, GetLogin)

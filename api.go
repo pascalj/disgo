@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/coopernurse/gorp"
@@ -22,7 +21,7 @@ func GetComments(
 	req *http.Request) {
 	var comments []Comment
 	qry := req.URL.Query()
-	dbmap.Select(&comments, "select * from comments where url=?", qry["url"][0])
+	dbmap.Select(&comments, "select * from comments where approved=1 and url=?", qry["url"][0])
 	ctx := map[string]interface{}{
 		"email": session.Get("email"),
 		"name":  session.Get("name"),
@@ -44,7 +43,7 @@ func GetComment(ren render.Render, view View, params martini.Params, dbmap *gorp
 	}
 }
 
-func UpdateComment(ren render.Render, params martini.Params, req *http.Request, dbmap *gorp.DbMap) {
+func UpdateComment(ren render.Render, params martini.Params, comment Comment, req *http.Request, dbmap *gorp.DbMap) {
 	obj, err := dbmap.Get(Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.JSON(404, nil)
@@ -54,6 +53,18 @@ func UpdateComment(ren render.Render, params martini.Params, req *http.Request, 
 		comment.Body = req.FormValue("body")
 		comment.Url = req.FormValue("url")
 		ren.JSON(200, comment)
+	}
+}
+
+func ApproveComment(ren render.Render, params martini.Params, req *http.Request, dbmap *gorp.DbMap) {
+	obj, err := dbmap.Get(Comment{}, params["id"])
+	if err != nil || obj == nil {
+		ren.Error(404)
+	} else {
+		comment := obj.(*Comment)
+		comment.Approved = true
+		dbmap.Update(comment)
+		ren.Redirect("/admin")
 	}
 }
 
@@ -98,7 +109,6 @@ func (comment Comment) Validate(errors *binding.Errors, req *http.Request) {
 
 func MapView(c martini.Context, w http.ResponseWriter, r *http.Request) {
 	accept := r.Header["Accept"]
-	fmt.Printf(accept[0])
 	if accept[0] != "" {
 		accept = strings.Split(accept[0], ",")
 	}

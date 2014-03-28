@@ -12,6 +12,11 @@
               <input name="_method" value="DELETE" type="hidden" />
               <input type="submit" value="Delete" class="button alert tiny"/>
             </form>
+            {{if not .Approved}}
+              <form action="/comments/approve/{{.Id}}" method="post">
+                <input type="submit" value="Approve" class="button success tiny"/>
+              </form>
+            {{end}}
           </div>
           <div class="comment-text large-9 columns">
             {{.Body}}

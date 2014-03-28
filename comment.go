@@ -15,6 +15,7 @@ type Comment struct {
 	Url      string `binding:"required" form:"url"`
 	ClientIp string `form:"-"`
 	ClientId string `form:"-"`
+	Approved bool   `form:"-"`
 }
 
 func NewComment(email, name, title, body, url, ip, id string) Comment {
@@ -26,6 +27,7 @@ func NewComment(email, name, title, body, url, ip, id string) Comment {
 		Url:      url,
 		ClientIp: ip,
 		ClientId: id,
+		Approved: false,
 	}
 }
 
@@ -37,6 +39,7 @@ func (c *Comment) MarshalJSON() ([]byte, error) {
 		"body":       c.Body,
 		"created_at": c.Created,
 		"url":        c.Url,
+		"approved":   c.Approved,
 	}
 	return json.Marshal(data)
 }
