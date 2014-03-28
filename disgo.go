@@ -13,6 +13,8 @@ import (
 	"github.com/ungerik/go-gravatar"
 	"html/template"
 	"log"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -46,6 +48,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 	r := martini.NewRouter()
+	r.Get(`/`, GetIndex)
 	r.Get(`/comments/:id`, GetComment)
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
@@ -69,6 +72,11 @@ func initDb() *gorp.DbMap {
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create tables failed")
 	return dbmap
+}
+
+func GetIndex(ren render.Render, req *http.Request) {
+	base := []string{"http://", req.Host, req.URL.Path}
+	ren.HTML(200, "index", strings.Join(base, ""))
 }
 
 func checkErr(err error, msg string) {
