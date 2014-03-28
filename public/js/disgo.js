@@ -6,7 +6,7 @@ function loadDisgo() {
 
   function initializeComments(el) {
     var url = $(el).attr('data-disgo-url')
-    ajax('GET', 'http://localhost:3000/comments', {url: url}, {"Accept": "text/html"}, function(status, result, xhr) {
+    ajax('GET', 'http://localhost:3000/comments?url=' + url, {}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
         alert('Error ' + xhr.status);
         return;

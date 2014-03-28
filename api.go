@@ -18,17 +18,19 @@ func GetComments(
 	view View,
 	params martini.Params,
 	dbmap *gorp.DbMap,
-	session sessions.Session) {
+	session sessions.Session,
+	req *http.Request) {
 	var comments []Comment
-	dbmap.Select(&comments, "select * from comments order by created asc")
+	qry := req.URL.Query()
+	dbmap.Select(&comments, "select * from comments where url=?", qry["url"][0])
+	ctx := map[string]interface{}{
+		"email": session.Get("email"),
+		"name":  session.Get("name"),
+	}
 	if comments != nil {
-		ctx := map[string]interface{}{
-			"email": session.Get("email"),
-			"name":  session.Get("name"),
-		}
 		view.RenderComments(comments, ctx, ren)
 	} else {
-		view.RenderComments([]Comment{}, nil, ren)
+		view.RenderComments([]Comment{}, ctx, ren)
 	}
 }
 
