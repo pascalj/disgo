@@ -50,7 +50,12 @@ func main() {
 	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
 	r.Get(`/comments`, GetComments)
 	r.Delete(`/comments/:id`, DestroyComment)
-	r.Get(`/admin`, AdminIndex)
+	r.Get(`/admin`, RequireLogin, AdminIndex)
+	r.Get(`/login`, GetLogin)
+	r.Post(`/login`, PostLogin)
+	r.Post(`/logout`, PostLogout)
+	r.Get(`/register`, GetRegister)
+	r.Post(`/user`, PostUser)
 	m.Action(r.Handle)
 	m.Run()
 }
@@ -60,6 +65,7 @@ func initDb() *gorp.DbMap {
 	checkErr(err, "sql.Open failed")
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	dbmap.AddTableWithName(Comment{}, "comments").SetKeys(true, "Id")
+	dbmap.AddTableWithName(User{}, "users").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create tables failed")
 	return dbmap
