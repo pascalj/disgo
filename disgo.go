@@ -24,9 +24,10 @@ func main() {
 	m = martini.New()
 	m.Map(initDb())
 	m.Use(martini.Static("public"))
-
+	cfg := LoadConfig()
 	store := sessions.NewCookieStore([]byte("secret"))
 	m.Use(sessions.Sessions("session", store))
+	m.Map(cfg)
 	m.Use(martini.Logger())
 	m.Use(MapView)
 	m.Use(method.Override())
@@ -44,7 +45,7 @@ func main() {
 		},
 	}))
 	m.Use(cors.Allow(&cors.Options{
-		AllowOrigins:     []string{"http*"},
+		AllowOrigins:     cfg.General.Origin,
 		AllowCredentials: true,
 	}))
 	r := martini.NewRouter()

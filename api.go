@@ -18,10 +18,15 @@ func GetComments(
 	params martini.Params,
 	dbmap *gorp.DbMap,
 	session sessions.Session,
-	req *http.Request) {
+	req *http.Request,
+	cfg Config) {
 	var comments []Comment
 	qry := req.URL.Query()
-	dbmap.Select(&comments, "select * from comments where approved=1 and url=?", qry["url"][0])
+	if cfg.General.Approval {
+		dbmap.Select(&comments, "select * from comments where approved=1 and url=?", qry["url"][0])
+	} else {
+		dbmap.Select(&comments, "select * from comments where url=?", qry["url"][0])
+	}
 	ctx := map[string]interface{}{
 		"email": session.Get("email"),
 		"name":  session.Get("name"),
