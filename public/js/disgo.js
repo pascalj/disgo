@@ -11,12 +11,12 @@
     var url = el.getAttribute('data-disgo-url')
     $ajax('GET', disgoHome + '/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
-        alert('Error ' + xhr.status);
+        window.console && console.log('Error loading disgo: ' + xhr.status);
         return;
       }
       el.innerHTML += result
       $1('[name=url]', el).setAttribute('value', url)
-      $('form', el)[0].addEventListener('submit', function(e) {
+      $1('form', el).addEventListener('submit', function(e) {
         e.preventDefault()
         submitComment(el)
       })
@@ -62,18 +62,19 @@
   }
 
   function $addClass(el, className) {
-    if (el.classList)
+    if (el.classList) {
       el.classList.add(className);
-    else
+    } else {
       el.className += ' ' + className;
+    }
   }
 
   function $removeClass(el, className) {
-  if (el.classList)
-    el.classList.remove(className);
-  else
-    el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
-
+    if (el.classList) {
+      el.classList.remove(className);
+    } else {
+      el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+    }
   }
 
   function $ajax(method, url, data, headers, handler) {
