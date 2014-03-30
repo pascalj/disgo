@@ -1,59 +1,95 @@
-
-function loadDisgo() {
-  $.each($('[data-disgo-url]'), function(i, el) {
-    initializeComments(el)
-  });
-
-  function initializeComments(el) {
-    var url = $(el).attr('data-disgo-url')
-    ajax('GET', 'http://localhost:3000/comments?url=' + url, {}, {"Accept": "text/html"}, function(status, result, xhr) {
-      if (status != 200) {
-        alert('Error ' + xhr.status);
-        return;
-      }
-      el.innerHTML += result
-      $('[name=url]', el).attr('value', url)
-      $('form', el).on('submit', function(e) {
-        e.preventDefault()
-        submitComment(el)
-      })
+(function(){
+  function loadDisgo() {
+    $each($('[data-disgo-url]'), function(el, i) {
+      initializeComments(el)
     });
-  }
 
-  function submitComment(el) {
-    var form = $("form", el)
-    ajax('POST', 'http://localhost:3000/comments', form.serialize(), {"Accept": "text/html"}, function(status, result, xhr) {
-      if (status != 200) {
-        var errors = JSON.parse(result);
-        for (fieldName in errors['fields']) {
-          var field = $('[name=' + fieldName + ']', el)
-          if (field) field.addClass('error')
+    function initializeComments(el) {
+      var url = el.getAttribute('data-disgo-url')
+      $ajax('GET', 'http://localhost:3000/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
+        if (status != 200) {
+          alert('Error ' + xhr.status);
+          return;
         }
-        return
-      }
-      el.innerHTML += result
-
-      $('form', el).reset()
-    })
-  }
-}
-
-window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
-function ajax(method, url, data, headers, handler) {
-  var invocation = new XMLHttpRequest();
-
-  if(invocation) {
-    invocation.withCredentials = true;
-    invocation.open(method, url, true);
-    invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-    for (headerName in headers) {
-      invocation.setRequestHeader(headerName, headers[headerName])
+        el.innerHTML += result
+        $1('[name=url]', el).setAttribute('value', url)
+        $('form', el)[0].addEventListener('submit', function(e) {
+          e.preventDefault()
+          submitComment(el)
+        })
+      });
     }
-    invocation.onreadystatechange = function(xhr) {
-      if (invocation.readyState == 4) {
-        handler(invocation.status, invocation.responseText, invocation);
+
+    function submitComment(el) {
+      var form = $1("form", el)
+      var data = {
+        'name': form.name.value,
+        'email': form.email.value,
+        'body': form.body.value,
+        'url': form.url.value
       }
+
+      $ajax('POST', 'http://localhost:3000/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
+        if (status != 200) {
+          var errors = JSON.parse(result);
+          for (fieldName in errors['fields']) {
+            var field = $1('[name=' + fieldName + ']', el)
+            if (field) $addClass(field, 'error')
+          }
+          return
+        }
+        el.innerHTML += result
+
+        // $('form', el).reset()
+      })
     }
-    invocation.send(data);
   }
-}
+
+  window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
+
+  function $(sel, ctx) {
+    if (ctx) {
+      return ctx.querySelectorAll(sel)
+    } else {
+      return document.querySelectorAll(sel)
+    }
+  }
+
+  function $1(sel, ctx) {
+    return $(sel, ctx)[0]
+  }
+
+  function $each(elements, clb) {
+    Array.prototype.forEach.call(elements, clb)
+  }
+
+  function $addClass(el, className) {
+    if (el.classList)
+      el.classList.add(className);
+    else
+      el.className += ' ' + className;
+  }
+
+  function $ajax(method, url, data, headers, handler) {
+    var invocation = new XMLHttpRequest();
+    var dataString = '';
+    for(field in data) {
+      dataString += field + '=' + encodeURIComponent(data[field]) + '&'
+    }
+
+    if(invocation) {
+      invocation.withCredentials = true;
+      invocation.open(method, url, true);
+      invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+      for (headerName in headers) {
+        invocation.setRequestHeader(headerName, headers[headerName])
+      }
+      invocation.onreadystatechange = function(xhr) {
+        if (invocation.readyState == 4) {
+          handler(invocation.status, invocation.responseText, invocation);
+        }
+      }
+      invocation.send(dataString);
+    }
+  }
+})(this);
