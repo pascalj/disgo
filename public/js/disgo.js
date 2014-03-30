@@ -1,4 +1,6 @@
 (function(){
+  var disgoHome = window.disgoHome
+
   function loadDisgo() {
     $each($('[data-disgo-url]'), function(el, i) {
       initializeComments(el)
@@ -7,7 +9,7 @@
 
   function initializeComments(el) {
     var url = el.getAttribute('data-disgo-url')
-    $ajax('GET', 'http://localhost:3000/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
+    $ajax('GET', disgoHome + '/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
         alert('Error ' + xhr.status);
         return;
@@ -30,7 +32,7 @@
       'url': form.url.value
     }
     $each($('input, textarea', el), function (el, i) { $removeClass(el, 'error') })
-    $ajax('POST', 'http://localhost:3000/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
+    $ajax('POST', disgoHome + '/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
         var errors = JSON.parse(result);
         for (fieldName in errors['fields']) {
