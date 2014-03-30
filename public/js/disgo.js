@@ -3,49 +3,45 @@
     $each($('[data-disgo-url]'), function(el, i) {
       initializeComments(el)
     });
-
-    function initializeComments(el) {
-      var url = el.getAttribute('data-disgo-url')
-      $ajax('GET', 'http://localhost:3000/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
-        if (status != 200) {
-          alert('Error ' + xhr.status);
-          return;
-        }
-        el.innerHTML += result
-        $1('[name=url]', el).setAttribute('value', url)
-        $('form', el)[0].addEventListener('submit', function(e) {
-          e.preventDefault()
-          submitComment(el)
-        })
-      });
-    }
-
-    function submitComment(el) {
-      var form = $1("form", el)
-      var data = {
-        'name': form.name.value,
-        'email': form.email.value,
-        'body': form.body.value,
-        'url': form.url.value
-      }
-
-      $ajax('POST', 'http://localhost:3000/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
-        if (status != 200) {
-          var errors = JSON.parse(result);
-          for (fieldName in errors['fields']) {
-            var field = $1('[name=' + fieldName + ']', el)
-            if (field) $addClass(field, 'error')
-          }
-          return
-        }
-        el.innerHTML += result
-
-        // $('form', el).reset()
-      })
-    }
   }
 
-  window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
+  function initializeComments(el) {
+    var url = el.getAttribute('data-disgo-url')
+    $ajax('GET', 'http://localhost:3000/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
+      if (status != 200) {
+        alert('Error ' + xhr.status);
+        return;
+      }
+      el.innerHTML += result
+      $1('[name=url]', el).setAttribute('value', url)
+      $('form', el)[0].addEventListener('submit', function(e) {
+        e.preventDefault()
+        submitComment(el)
+      })
+    });
+  }
+
+  function submitComment(el) {
+    var form = $1("form", el)
+    var data = {
+      'name': form.name.value,
+      'email': form.email.value,
+      'body': form.body.value,
+      'url': form.url.value
+    }
+    $each($('input, textarea', el), function (el, i) { $removeClass(el, 'error') })
+    $ajax('POST', 'http://localhost:3000/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
+      if (status != 200) {
+        var errors = JSON.parse(result);
+        for (fieldName in errors['fields']) {
+          var field = $1('[name=' + fieldName + ']', el)
+          if (field) $addClass(field, 'error')
+        }
+        return
+      }
+      el.innerHTML += result
+    })
+  }
 
   function $(sel, ctx) {
     if (ctx) {
@@ -70,6 +66,14 @@
       el.className += ' ' + className;
   }
 
+  function $removeClass(el, className) {
+  if (el.classList)
+    el.classList.remove(className);
+  else
+    el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+
+  }
+
   function $ajax(method, url, data, headers, handler) {
     var invocation = new XMLHttpRequest();
     var dataString = '';
@@ -92,4 +96,6 @@
       invocation.send(dataString);
     }
   }
+
+  window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
 })(this);
