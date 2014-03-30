@@ -40,7 +40,7 @@ footer {
   line-height: 1.4;
 }
 
-.comment .email, .comment .date, .comment .url {
+.comment .email, .comment .date, .comment .url, .comment .client-ip {
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;

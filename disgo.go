@@ -84,7 +84,7 @@ func RateLimit(ren render.Render, req *http.Request,
 	s sessions.Session, comment Comment, cfg Config, dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
-		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=? and Created>?", req.RemoteAddr, duration)
+		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=? and Created>?", strings.Split(req.RemoteAddr, ":")[0], duration)
 
 		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
 			errors := map[string]string{"overall": "Rate limit reached."}
