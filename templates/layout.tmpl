@@ -12,21 +12,12 @@
         <link rel="stylesheet" href="/css/admin/layout.css">
     </head>
     <body>
-
         <nav class="top-bar" data-topbar>
           <ul class="title-area">
             <li class="name">
               <h1><a href="/admin"><img src="/img/disgo.svg" alt=""> Disgo</a></h1>
             </li>
           </ul>
-
-          <section class="top-bar-section">
-            <ul class="right">
-              <li><a href="/admin/">Recent comments</a></li>
-              <li><a href="/admin/unapproved">Unapproved comments</a></li>
-              <li class="has-form show-for-large-up"><form action="/logout" method="POST"><button class="tiny">Logout</button></form></li>
-            </ul>
-          </section>
         </nav>
 
         <div class="row">
@@ -34,8 +25,5 @@
                 {{ yield }}
             </div>
         </div>
-        <footer>
-          Disgo by <a href="http://www.pascalj.de">Pascal Jungblut</a> — MIT licence
-        </footer>
     </body>
 </html>

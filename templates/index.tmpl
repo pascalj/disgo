@@ -9,6 +9,7 @@
 
         <link rel="stylesheet" href="/css/admin/normalize.min.css">
         <link rel="stylesheet" href="/css/admin/foundation.min.css">
+        <link rel="stylesheet" href="/css/admin/layout.css">
         <style type="text/css">
         pre.hl  { color:#000000; background-color:#e0eaee; font-size:10pt; font-family:'Courier New',monospace;}
         .hl.str { color:#bf0303; }
@@ -21,10 +22,21 @@
         </style>
     </head>
     <body>
+        <nav class="top-bar" data-topbar>
+            <ul class="title-area">
+                <li class="name">
+                    <h1><a href="/"><img src="/img/disgo.svg" alt=""> Disgo</a></h1>
+                </li>
+            </ul>
+            <section class="top-bar-section">
+                <ul class="right">
+                    <li><a href="/login">Adminpanel</a></li>
+                </ul>
+            </section>
+        </nav>
         <div class="row">
-            <div class="large-12 columns">
-                <a class="button small radius success" href="/admin">Disgo Adminpanel</a>
-                <h1>Disgo</h1>
+            <div class="large-6 columns">
+                <h3>Embedding</h3>
                 <p>To enable Disgo on your page, add the following line to your website:</p>
                 <input onClick="this.select();" type="text" value="&lt;script src=&quot;{{.}}js/disgo.js&quot;&gt;&lt;/script&gt;"/>
                 <p>Add a comments section by providing an element with a data-disgo-url attribute. Example:</p>

@@ -56,6 +56,7 @@ func main() {
 	r.Post(`/comments/approve/:id`, ApproveComment)
 	r.Delete(`/comments/:id`, DestroyComment)
 	r.Get(`/admin`, RequireLogin, AdminIndex)
+	r.Get(`/admin/unapproved`, RequireLogin, UnapprovedComments)
 	r.Get(`/login`, GetLogin)
 	r.Post(`/login`, PostLogin)
 	r.Post(`/logout`, PostLogout)

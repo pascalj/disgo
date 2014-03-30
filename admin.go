@@ -17,6 +17,20 @@ func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
 	})
 }
 
+func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap) {
+	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
+	if err == nil && count > 0 {
+		var comments []Comment
+		dbmap.Select(&comments, "select * from comments where approved=0")
+		ren.HTML(200, "admin/unapproved", comments, render.HTMLOptions{
+			Layout: "admin/layout",
+		})
+	} else {
+		ren.Redirect("/admin")
+	}
+
+}
+
 func GetRegister(ren render.Render) {
 	ren.HTML(200, "admin/register", nil, render.HTMLOptions{
 		Layout: "admin/layout",
@@ -52,7 +66,7 @@ func RequireLogin(rw http.ResponseWriter, req *http.Request,
 func GetLogin(ren render.Render, dbmap *gorp.DbMap) {
 	if UserCount(dbmap) > 0 {
 		ren.HTML(200, "admin/login", nil, render.HTMLOptions{
-			Layout: "admin/layout",
+			Layout: "layout",
 		})
 	} else {
 		ren.Redirect("/register")
@@ -66,7 +80,7 @@ func PostLogin(ren render.Render, req *http.Request, session sessions.Session, d
 	email, password := req.FormValue("email"), req.FormValue("password")
 	err := dbmap.SelectOne(&user, "select * from users where email=?", email)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		ren.Redirect("/admin/login")
+		ren.Redirect("/login")
 		return
 	}
 
