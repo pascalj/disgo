@@ -75,6 +75,7 @@ func ApproveComment(ren render.Render, params martini.Params, req *http.Request,
 
 func CreateComment(ren render.Render, view View, comment Comment, req *http.Request, dbmap *gorp.DbMap, session sessions.Session) {
 	comment.Created = time.Now().Unix()
+	comment.ClientIp = req.RemoteAddr
 	err := dbmap.Insert(&comment)
 	if err != nil {
 		ren.JSON(400, err.Error())
