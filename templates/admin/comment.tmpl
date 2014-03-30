@@ -17,7 +17,7 @@
           </div>
           <div class="large-3 small-3 columns">
             <ul class="button-group radius">
-              {{if not .Approved}}
+              {{if . | awaitingApproval}}
                 <li>
                   <form action="/comments/approve/{{.Id}}" method="post" class="approve">
                     <input type="submit" value="Approve" class="button success tiny"/>

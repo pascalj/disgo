@@ -41,6 +41,9 @@ func main() {
 				"gravatar": func(args ...interface{}) string {
 					return gravatar.Url(args[0].(string))
 				},
+				"awaitingApproval": func(args ...Comment) bool {
+					return !args[0].Approved && cfg.General.Approval
+				},
 			},
 		},
 	}))
