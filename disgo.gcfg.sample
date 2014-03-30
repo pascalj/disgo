@@ -1,6 +1,13 @@
 [general]
-; admins must approve comments new comments
+;; admins must approve comments new comments
 ;approval
-; list of websites that are allowed to post comments
+;; list of websites that are allowed to post comments
 ;origin = http://host1.com
 ;origin = http://host2.com
+[rate-limit]
+;; enable rate limiting
+;enable
+;; maximum number of comments
+;max-comments = 5
+;; duration to check
+;seconds = 3600 # 1 hour

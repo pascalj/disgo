@@ -51,7 +51,7 @@ func main() {
 	r := martini.NewRouter()
 	r.Get(`/`, GetIndex)
 	r.Get(`/comments/:id`, GetComment)
-	r.Post(`/comments`, binding.Bind(Comment{}), CreateComment)
+	r.Post(`/comments`, binding.Bind(Comment{}), RateLimit, CreateComment)
 	r.Get(`/comments`, GetComments)
 	r.Post(`/comments/approve/:id`, ApproveComment)
 	r.Delete(`/comments/:id`, DestroyComment)
@@ -74,6 +74,21 @@ func initDb() *gorp.DbMap {
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create tables failed")
 	return dbmap
+}
+
+func RateLimit(ren render.Render, req *http.Request,
+	s sessions.Session, comment Comment, cfg Config, dbmap *gorp.DbMap) {
+	if cfg.Rate_Limit.Enable {
+		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
+		email := s.Get("email")
+		count, err := dbmap.SelectInt("select count(*) from comments where email=? and created>?", email, duration)
+
+		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
+			errors := map[string]string{"overall": "Rate limit reached."}
+			ren.JSON(429, errors)
+			return
+		}
+	}
 }
 
 func GetIndex(ren render.Render, req *http.Request) {

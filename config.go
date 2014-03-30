@@ -9,6 +9,11 @@ type Config struct {
 		Approval bool
 		Origin   []string
 	}
+	Rate_Limit struct {
+		Enable       bool
+		Max_Comments int64
+		Seconds      int64
+	}
 }
 
 func LoadConfig() Config {
