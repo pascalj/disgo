@@ -21,7 +21,7 @@ func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap) {
 	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
 	if err == nil && count > 0 {
 		var comments []Comment
-		dbmap.Select(&comments, "select * from comments where approved=0")
+		dbmap.Select(&comments, "select * from comments where approved<>1 order by created desc")
 		ren.HTML(200, "admin/unapproved", comments, render.HTMLOptions{
 			Layout: "admin/layout",
 		})

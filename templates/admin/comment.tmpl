@@ -1,39 +1,46 @@
 <div class="comment row">
   <div class="large-6 panel columns">
     <div class="row">
-      <div class="large-1 columns">
+      <div class="large-1 show-for-large-up columns">
         <img class="avatar" src="{{.Email | gravatar}}" alt=""/><br>
         {{if .Approved}}
           <span class="label success approved">Approved</span>
         {{end}}
       </div>
-      <div class="large-3 columns">
-        <h5>{{.Name}} — {{.Created | formatTime}}</h5>
-        <a href="{{.Email}}">{{.Email}}</a>
-      </div>
-      <div class="large-2 columns">
-        <ul class="button-group">
-          {{if not .Approved}}
-            <li>
-              <form action="/comments/approve/{{.Id}}" method="post" class="approve">
-                <input type="submit" value="Approve" class="button success tiny"/>
-              </form>
-            </li>
-          {{end}}
-          <li>
-            <form action="/comments/{{.Id}}" method="post" class="delete">
-              <input name="_method" value="DELETE" type="hidden" />
-              <input type="submit" value="Delete" class="button secondary tiny"/>
-            </form>
-          </li>
-        </ul>
+      <div class="large-5 columns">
+        <div class="row">
+          <div class="large-3 small-3 columns">
+            <h5>{{.Name}}</h5>
+            <div class="date">{{.Created | formatTime}}</div>
+            <a class="email" href="mailto:{{.Email}}">{{.Email}}</a>
+            <div class="url">On <a class="url" href="{{.Url}}">{{.Url}}</a></div>
+          </div>
+          <div class="large-3 small-3 columns">
+            <ul class="button-group radius">
+              {{if not .Approved}}
+                <li>
+                  <form action="/comments/approve/{{.Id}}" method="post" class="approve">
+                    <input type="submit" value="Approve" class="button success tiny"/>
+                  </form>
+                </li>
+              {{end}}
+              <li>
+                <form action="/comments/{{.Id}}" method="post" class="delete">
+                  <input name="_method" value="DELETE" type="hidden" />
+                  <input type="submit" value="Delete" class="button secondary tiny"/>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="row comment-text">
+          <div class="large-6 columns">
+            <hr>
+            {{.Body}}
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row comment-text">
-      <div class="large-5 large-push-1 columns">
-        <hr>
-        {{.Body}}
-      </div>
-    </div>
+
   </div>
 </div>

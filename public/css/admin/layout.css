@@ -1,10 +1,12 @@
 html {
     position: relative;
     min-height: 100%;
+    height: auto;
 }
 body {
     padding: 0 0 30px;
     height: auto;
+    position: static;
 }
 footer {
     position: absolute;
@@ -36,4 +38,11 @@ footer {
 .comment .comment-text {
   font-size: 15px;
   line-height: 1.4;
+}
+
+.comment .email, .comment .date, .comment .url {
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
