@@ -78,7 +78,7 @@ func PostLogin(ren render.Render, req *http.Request, session sessions.Session, d
 	var user User
 
 	email, password := req.FormValue("email"), req.FormValue("password")
-	err := dbmap.SelectOne(&user, "select * from users where email=?", email)
+	err := dbmap.SelectOne(&user, "select * from users where email=$1", email)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		ren.Redirect("/login")
 		return

@@ -2,3 +2,4 @@ gin-bin
 disgo
 *.o
 disgo.gcfg
+*.sqlite3

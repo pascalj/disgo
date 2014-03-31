@@ -23,9 +23,9 @@ func GetComments(
 	var comments []Comment
 	qry := req.URL.Query()
 	if cfg.General.Approval {
-		dbmap.Select(&comments, "select * from comments where (approved=1 OR email=?) and url=?", session.Get("email"), qry["url"][0])
+		dbmap.Select(&comments, "select * from comments where (approved=1 OR email=$1) and url=$2", session.Get("email"), qry["url"][0])
 	} else {
-		dbmap.Select(&comments, "select * from comments where url=?", qry["url"][0])
+		dbmap.Select(&comments, "select * from comments where url=$1", qry["url"][0])
 	}
 	ctx := map[string]interface{}{
 		"email": session.Get("email"),

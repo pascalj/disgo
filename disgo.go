@@ -5,6 +5,8 @@ import (
 	"github.com/codegangsta/martini"
 	"github.com/codegangsta/martini-contrib/render"
 	"github.com/coopernurse/gorp"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/method"
@@ -22,9 +24,9 @@ var m *martini.Martini
 
 func main() {
 	m = martini.New()
-	m.Map(initDb())
-	m.Use(martini.Static("public"))
 	cfg := LoadConfig()
+	m.Map(initDb(cfg))
+	m.Use(martini.Static("public"))
 	store := sessions.NewCookieStore([]byte("secret"))
 	m.Use(sessions.Sessions("session", store))
 	m.Map(cfg)
@@ -69,10 +71,20 @@ func main() {
 	m.Run()
 }
 
-func initDb() *gorp.DbMap {
-	db, err := sql.Open("sqlite3", "/tmp/test_db.bin")
+func initDb(cfg Config) *gorp.DbMap {
+	db, err := sql.Open(cfg.Database.Driver, cfg.Database.Access)
 	checkErr(err, "sql.Open failed")
-	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+	var dbmap *gorp.DbMap
+	switch cfg.Database.Driver {
+	case "mysql":
+		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
+	case "postgres":
+		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
+	case "sqlite3":
+		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
+	default:
+		panic("No valid SQL driver specified. Options are: mysql, postgres, sqlite3.")
+	}
 	dbmap.AddTableWithName(Comment{}, "comments").SetKeys(true, "Id")
 	dbmap.AddTableWithName(User{}, "users").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
@@ -84,7 +96,7 @@ func RateLimit(ren render.Render, req *http.Request,
 	s sessions.Session, comment Comment, cfg Config, dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
-		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=? and Created>?", strings.Split(req.RemoteAddr, ":")[0], duration)
+		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", strings.Split(req.RemoteAddr, ":")[0], duration)
 
 		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
 			errors := map[string]string{"overall": "Rate limit reached."}

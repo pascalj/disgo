@@ -9,6 +9,10 @@ type Config struct {
 		Approval bool
 		Origin   []string
 	}
+	Database struct {
+		Driver string
+		Access string
+	}
 	Rate_Limit struct {
 		Enable       bool
 		Max_Comments int64

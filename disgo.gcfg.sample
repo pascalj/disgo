@@ -4,6 +4,15 @@
 ;; list of websites that are allowed to post comments
 ;origin = http://host1.com
 ;origin = http://host2.com
+[database]
+;; database driver: sqlite3, mysql, postgres
+driver = sqlite3
+;; for sqlite3
+access = disgo.sqlite3
+;; for mysql
+;access = username:password@tcp(localhost:3306)/dbname
+;; for postgres
+;access = user=username dbname=password host=localhost password=password sslmode=disable
 [rate-limit]
 ;; enable rate limiting
 ;enable
