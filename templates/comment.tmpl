@@ -9,6 +9,10 @@
   {{end}}
 
   <div class="comment-text">
-    {{.Body}}
+    {{if usesMarkdown}}
+      {{.Body | markdown}}
+    {{else}}
+      {{.Body}}
+    {{end}}
   </div>
 </div>

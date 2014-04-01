@@ -8,6 +8,7 @@ type Config struct {
 	General struct {
 		Approval bool
 		Origin   []string
+		Markdown bool
 	}
 	Database struct {
 		Driver string

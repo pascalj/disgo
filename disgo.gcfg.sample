@@ -4,6 +4,8 @@
 ;; list of websites that are allowed to post comments
 ;origin = http://host1.com
 ;origin = http://host2.com
+;; uncomment to allow markdown in comments
+;markdown
 [database]
 ;; database driver: sqlite3, mysql, postgres
 driver = sqlite3

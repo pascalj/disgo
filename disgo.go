@@ -12,6 +12,7 @@ import (
 	"github.com/martini-contrib/method"
 	"github.com/martini-contrib/sessions"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
 	"log"
@@ -45,6 +46,13 @@ func main() {
 				},
 				"awaitingApproval": func(args ...Comment) bool {
 					return !args[0].Approved && cfg.General.Approval
+				},
+				"usesMarkdown": func() bool {
+					return cfg.General.Markdown
+				},
+				"markdown": func(args ...string) template.HTML {
+					output := blackfriday.MarkdownCommon([]byte(args[0]))
+					return template.HTML(output)
 				},
 			},
 		},

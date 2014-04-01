@@ -37,7 +37,11 @@
         <div class="row comment-text">
           <div class="large-6 columns">
             <hr>
-            {{.Body}}
+            {{if usesMarkdown}}
+              {{.Body | markdown}}
+            {{else}}
+              {{.Body}}
+            {{end}}
           </div>
         </div>
       </div>
