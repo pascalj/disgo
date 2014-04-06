@@ -22,17 +22,16 @@ import (
 )
 
 var (
-	m   *martini.Martini
+	m   *martini.ClassicMartini
 	cfg Config
 )
 
 func init() {
-	m = martini.New()
+	m = martini.Classic()
 	cfg = LoadConfig()
 	m.Map(cfg)
 	m.Map(initDb(cfg))
 	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte("secret"))))
-	m.Use(martini.Static("public"))
 	m.Use(cors.Allow(&cors.Options{
 		AllowOrigins:     cfg.General.Origin,
 		AllowCredentials: true,
@@ -46,19 +45,23 @@ func init() {
 
 func main() {
 	r := martini.NewRouter()
-	r.Get(`/`, getIndex)
-	r.Get(`/comments/:id`, GetComment)
-	r.Post(`/comments`, binding.Bind(Comment{}), rateLimit, CreateComment)
-	r.Get(`/comments`, GetComments)
-	r.Post(`/comments/approve/:id`, ApproveComment)
-	r.Delete(`/comments/:id`, DestroyComment)
-	r.Get(`/admin`, RequireLogin, AdminIndex)
-	r.Get(`/admin/unapproved`, RequireLogin, UnapprovedComments)
+	r.Group(`/comments`, func(r martini.Router) {
+		r.Get(`/:id`, GetComment)
+		r.Post(``, binding.Bind(Comment{}), rateLimit, CreateComment)
+		r.Get(``, GetComments)
+		r.Post(`/approve/:id`, ApproveComment)
+		r.Delete(`/:id`, DestroyComment)
+	})
+	r.Group(`/admin`, func(r martini.Router) {
+		r.Get(``, RequireLogin, AdminIndex)
+		r.Get(`/unapproved`, RequireLogin, UnapprovedComments)
+	})
 	r.Get(`/login`, GetLogin)
 	r.Post(`/login`, PostLogin)
 	r.Post(`/logout`, PostLogout)
 	r.Get(`/register`, GetRegister)
 	r.Post(`/user`, PostUser)
+	r.Get(`/`, getIndex)
 	m.Action(r.Handle)
 	m.Run()
 }
