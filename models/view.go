@@ -1,4 +1,4 @@
-package main
+package models
 
 import (
 	"github.com/martini-contrib/render"

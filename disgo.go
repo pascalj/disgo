@@ -12,6 +12,8 @@ import (
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pascalj/disgo/handler"
+	"github.com/pascalj/disgo/models"
 	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
@@ -23,12 +25,12 @@ import (
 
 var (
 	m   *martini.ClassicMartini
-	cfg Config
+	cfg models.Config
 )
 
 func init() {
 	m = martini.Classic()
-	cfg = LoadConfig()
+	cfg = models.LoadConfig()
 	m.Map(cfg)
 	m.Map(initDb(cfg))
 	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte("secret"))))
@@ -40,33 +42,33 @@ func init() {
 	m.Use(render.Renderer(render.Options{
 		Funcs: viewhelper(),
 	}))
-	m.Use(MapView)
+	m.Use(handler.MapView)
 }
 
 func main() {
 	r := martini.NewRouter()
 	r.Group(`/comments`, func(r martini.Router) {
-		r.Get(`/:id`, GetComment)
-		r.Post(``, binding.Bind(Comment{}), rateLimit, CreateComment)
-		r.Get(``, GetComments)
-		r.Post(`/approve/:id`, ApproveComment)
-		r.Delete(`/:id`, DestroyComment)
+		r.Get(`/:id`, handler.GetComment)
+		r.Post(``, binding.Bind(models.Comment{}), rateLimit, handler.CreateComment)
+		r.Get(``, handler.GetComments)
+		r.Post(`/approve/:id`, handler.ApproveComment)
+		r.Delete(`/:id`, handler.DestroyComment)
 	})
 	r.Group(`/admin`, func(r martini.Router) {
-		r.Get(``, RequireLogin, AdminIndex)
-		r.Get(`/unapproved`, RequireLogin, UnapprovedComments)
+		r.Get(``, handler.RequireLogin, handler.AdminIndex)
+		r.Get(`/unapproved`, handler.RequireLogin, handler.UnapprovedComments)
 	})
-	r.Get(`/login`, GetLogin)
-	r.Post(`/login`, PostLogin)
-	r.Post(`/logout`, PostLogout)
-	r.Get(`/register`, GetRegister)
-	r.Post(`/user`, PostUser)
+	r.Get(`/login`, handler.GetLogin)
+	r.Post(`/login`, handler.PostLogin)
+	r.Post(`/logout`, handler.PostLogout)
+	r.Get(`/register`, handler.GetRegister)
+	r.Post(`/user`, handler.PostUser)
 	r.Get(`/`, getIndex)
 	m.Action(r.Handle)
 	m.Run()
 }
 
-func initDb(cfg Config) *gorp.DbMap {
+func initDb(cfg models.Config) *gorp.DbMap {
 	db, err := sql.Open(cfg.Database.Driver, cfg.Database.Access)
 	checkErr(err, "sql.Open failed")
 	var dbmap *gorp.DbMap
@@ -80,15 +82,15 @@ func initDb(cfg Config) *gorp.DbMap {
 	default:
 		panic("No valid SQL driver specified. Options are: mysql, postgres, sqlite3.")
 	}
-	dbmap.AddTableWithName(Comment{}, "comments").SetKeys(true, "Id")
-	dbmap.AddTableWithName(User{}, "users").SetKeys(true, "Id")
+	dbmap.AddTableWithName(models.Comment{}, "comments").SetKeys(true, "Id")
+	dbmap.AddTableWithName(models.User{}, "users").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
 	checkErr(err, "Create tables failed")
 	return dbmap
 }
 
 func rateLimit(ren render.Render, req *http.Request,
-	s sessions.Session, comment Comment, cfg Config, dbmap *gorp.DbMap) {
+	s sessions.Session, comment models.Comment, cfg models.Config, dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
 		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", strings.Split(req.RemoteAddr, ":")[0], duration)
@@ -111,7 +113,7 @@ func viewhelper() []template.FuncMap {
 			"gravatar": func(args ...interface{}) string {
 				return gravatar.Url(args[0].(string))
 			},
-			"awaitingApproval": func(args ...Comment) bool {
+			"awaitingApproval": func(args ...models.Comment) bool {
 				return !args[0].Approved && cfg.General.Approval
 			},
 			"usesMarkdown": func() bool {

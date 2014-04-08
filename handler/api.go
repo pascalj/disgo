@@ -1,11 +1,11 @@
-package main
+package handler
 
 import (
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
-	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
+	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strings"
 	"time"
@@ -14,13 +14,13 @@ import (
 func GetComments(
 	res http.ResponseWriter,
 	ren render.Render,
-	view View,
+	view models.View,
 	params martini.Params,
 	dbmap *gorp.DbMap,
 	session sessions.Session,
 	req *http.Request,
-	cfg Config) {
-	var comments []Comment
+	cfg models.Config) {
+	var comments []models.Comment
 	qry := req.URL.Query()
 	if cfg.General.Approval {
 		dbmap.Select(&comments, "select * from comments where (approved = 1 OR email = :email) and url = :url",
@@ -35,26 +35,26 @@ func GetComments(
 	if comments != nil {
 		view.RenderComments(comments, ctx, ren)
 	} else {
-		view.RenderComments([]Comment{}, ctx, ren)
+		view.RenderComments([]models.Comment{}, ctx, ren)
 	}
 }
 
-func GetComment(ren render.Render, view View, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(Comment{}, params["id"])
+func GetComment(ren render.Render, view models.View, params martini.Params, dbmap *gorp.DbMap) {
+	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.JSON(404, nil)
 	} else {
-		comment := obj.(*Comment)
+		comment := obj.(*models.Comment)
 		view.RenderComment(*comment, nil, ren)
 	}
 }
 
-func UpdateComment(ren render.Render, params martini.Params, comment Comment, req *http.Request, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(Comment{}, params["id"])
+func UpdateComment(ren render.Render, params martini.Params, comment models.Comment, req *http.Request, dbmap *gorp.DbMap) {
+	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.JSON(404, nil)
 	} else {
-		comment := obj.(*Comment)
+		comment := obj.(*models.Comment)
 		comment.Email = req.FormValue("email")
 		comment.Body = req.FormValue("body")
 		comment.Url = req.FormValue("url")
@@ -63,18 +63,18 @@ func UpdateComment(ren render.Render, params martini.Params, comment Comment, re
 }
 
 func ApproveComment(ren render.Render, params martini.Params, req *http.Request, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(Comment{}, params["id"])
+	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.Error(404)
 	} else {
-		comment := obj.(*Comment)
+		comment := obj.(*models.Comment)
 		comment.Approved = true
 		dbmap.Update(comment)
 		ren.Redirect("/admin")
 	}
 }
 
-func CreateComment(ren render.Render, view View, comment Comment, req *http.Request, dbmap *gorp.DbMap, session sessions.Session) {
+func CreateComment(ren render.Render, view models.View, comment models.Comment, req *http.Request, dbmap *gorp.DbMap, session sessions.Session) {
 	comment.Created = time.Now().Unix()
 	comment.ClientIp = strings.Split(req.RemoteAddr, ":")[0]
 	err := dbmap.Insert(&comment)
@@ -88,29 +88,17 @@ func CreateComment(ren render.Render, view View, comment Comment, req *http.Requ
 }
 
 func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(Comment{}, params["id"])
+	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.JSON(404, nil)
 	} else {
-		comment := obj.(*Comment)
+		comment := obj.(*models.Comment)
 		count, err := dbmap.Delete(comment)
 		if count != 1 || err != nil {
 			ren.JSON(500, err.Error())
 		} else {
 			ren.Redirect("/admin")
 		}
-	}
-}
-
-func (comment Comment) Validate(errors *binding.Errors, req *http.Request) {
-	if len(comment.Name) == 0 {
-		errors.Fields["name"] = "Please enter a name."
-	}
-	if len(comment.Body) == 0 {
-		errors.Fields["body"] = "You must enter a comment text."
-	}
-	if len(comment.Email) == 0 {
-		errors.Fields["email"] = "Please enter an email address."
 	}
 }
 
@@ -121,10 +109,10 @@ func MapView(c martini.Context, w http.ResponseWriter, r *http.Request) {
 	}
 	switch accept[0] {
 	case "text/html":
-		c.MapTo(HtmlView{}, (*View)(nil))
+		c.MapTo(models.HtmlView{}, (*models.View)(nil))
 		w.Header().Set("Content-Type", "text/html")
 	default:
-		c.MapTo(JsonView{}, (*View)(nil))
+		c.MapTo(models.JsonView{}, (*models.View)(nil))
 		w.Header().Set("Content-Type", "application/json")
 	}
 }

@@ -1,8 +1,10 @@
-package main
+package models
 
 import (
 	"encoding/json"
+	"github.com/martini-contrib/binding"
 	"github.com/ungerik/go-gravatar"
+	"net/http"
 	"time"
 )
 
@@ -42,4 +44,16 @@ func (c *Comment) MarshalJSON() ([]byte, error) {
 		"approved":   c.Approved,
 	}
 	return json.Marshal(data)
+}
+
+func (comment Comment) Validate(errors *binding.Errors, req *http.Request) {
+	if len(comment.Name) == 0 {
+		errors.Fields["name"] = "Please enter a name."
+	}
+	if len(comment.Body) == 0 {
+		errors.Fields["body"] = "You must enter a comment text."
+	}
+	if len(comment.Email) == 0 {
+		errors.Fields["email"] = "Please enter an email address."
+	}
 }

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
@@ -6,11 +6,12 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
+	"github.com/pascalj/disgo/models"
 	"net/http"
 )
 
 func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
-	var comments []Comment
+	var comments []models.Comment
 	dbmap.Select(&comments, "select * from comments order by created desc limit 10")
 	ren.HTML(200, "admin/index", comments, render.HTMLOptions{
 		Layout: "admin/layout",
@@ -20,7 +21,7 @@ func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
 func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap) {
 	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
 	if err == nil && count > 0 {
-		var comments []Comment
+		var comments []models.Comment
 		dbmap.Select(&comments, "select * from comments where approved<>1 order by created desc")
 		ren.HTML(200, "admin/unapproved", comments, render.HTMLOptions{
 			Layout: "admin/layout",
@@ -38,9 +39,9 @@ func GetRegister(ren render.Render) {
 }
 
 func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap) {
-	if UserCount(dbmap) == 0 {
+	if models.UserCount(dbmap) == 0 {
 		email, password := req.FormValue("email"), req.FormValue("password")
-		user := NewUser(email, password)
+		user := models.NewUser(email, password)
 		err := dbmap.Insert(&user)
 		if err != nil {
 			ren.Redirect("/register")
@@ -52,19 +53,19 @@ func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap) {
 
 func RequireLogin(rw http.ResponseWriter, req *http.Request,
 	s sessions.Session, dbmap *gorp.DbMap, c martini.Context) {
-	obj, err := dbmap.Get(User{}, s.Get("userId"))
+	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
 
 	if err != nil || obj == nil {
 		http.Redirect(rw, req, "/login", http.StatusFound)
 		return
 	}
 
-	user := obj.(*User)
+	user := obj.(*models.User)
 	c.Map(user)
 }
 
 func GetLogin(ren render.Render, dbmap *gorp.DbMap) {
-	if UserCount(dbmap) > 0 {
+	if models.UserCount(dbmap) > 0 {
 		ren.HTML(200, "admin/login", nil, render.HTMLOptions{
 			Layout: "layout",
 		})
@@ -75,7 +76,7 @@ func GetLogin(ren render.Render, dbmap *gorp.DbMap) {
 }
 
 func PostLogin(ren render.Render, req *http.Request, session sessions.Session, dbmap *gorp.DbMap) {
-	var user User
+	var user models.User
 
 	email, password := req.FormValue("email"), req.FormValue("password")
 	err := dbmap.SelectOne(&user, "select * from users where email = :email", map[string]interface{}{"email": email})
