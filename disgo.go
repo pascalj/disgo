@@ -14,6 +14,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
+	"github.com/pascalj/disgo/service"
 	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
@@ -43,6 +44,7 @@ func init() {
 		Funcs: viewhelper(),
 	}))
 	m.Use(handler.MapView)
+	m.Map(service.MapNotifier(cfg))
 }
 
 func main() {

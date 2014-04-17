@@ -6,6 +6,7 @@ import (
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
+	"github.com/pascalj/disgo/service"
 	"net/http"
 	"strings"
 	"time"
@@ -74,7 +75,13 @@ func ApproveComment(ren render.Render, params martini.Params, req *http.Request,
 	}
 }
 
-func CreateComment(ren render.Render, view models.View, comment models.Comment, req *http.Request, dbmap *gorp.DbMap, session sessions.Session) {
+func CreateComment(ren render.Render,
+	view models.View,
+	comment models.Comment,
+	req *http.Request,
+	dbmap *gorp.DbMap,
+	session sessions.Session,
+	notifier *service.Notifier) {
 	comment.Created = time.Now().Unix()
 	comment.ClientIp = strings.Split(req.RemoteAddr, ":")[0]
 	err := dbmap.Insert(&comment)
@@ -83,6 +90,7 @@ func CreateComment(ren render.Render, view models.View, comment models.Comment, 
 	} else {
 		session.Set("email", comment.Email)
 		session.Set("name", comment.Name)
+		go notifier.CommentCreated(&comment)
 		view.RenderComment(comment, nil, ren)
 	}
 }

@@ -19,6 +19,15 @@ type Config struct {
 		Max_Comments int64
 		Seconds      int64
 	}
+	Email struct {
+		Notify   bool
+		From     string
+		To       []string
+		Username string
+		Password string
+		Host     string
+		Port     int
+	}
 }
 
 func LoadConfig() Config {

@@ -22,3 +22,14 @@ access = disgo.sqlite3
 ;max-comments = 5
 ;; duration to check
 ;seconds = 3600 # 1 hour
+[email]
+;; uncomment the following to activate email notifications
+;notify
+from = mail@example.com
+;; list of recipients
+to = mail@example.com
+;; SMTP plain auth
+username = my_username
+password = my_password
+host = smtp.gmail.com
+port = 587
