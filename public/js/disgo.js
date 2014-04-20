@@ -1,5 +1,5 @@
 (function(){
-  var disgoHome = window.disgoHome
+  var disgo = window.disgo
 
   function loadDisgo() {
     $each($('[data-disgo-url]'), function(el, i) {
@@ -9,7 +9,7 @@
 
   function initializeComments(el) {
     var url = el.getAttribute('data-disgo-url')
-    $ajax('GET', disgoHome + '/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
+    $ajax('GET', disgo.base + '/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
         window.console && console.log('Error loading disgo: ' + xhr.status);
         return;
@@ -32,16 +32,25 @@
       'url': form.url.value
     }
     $each($('input, textarea', el), function (el, i) { $removeClass(el, 'error') })
-    $ajax('POST', disgoHome + '/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
+    $ajax('POST', disgo.base + '/comments', data, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
-        var errors = JSON.parse(result);
-        for (fieldName in errors['fields']) {
-          var field = $1('[name=' + fieldName + ']', el)
-          if (field) $addClass(field, 'error')
+        if (disgo.onSubmitError) {
+          disgo.onSubmitError(status, result, xhr, form)
+        } else {
+          var errors = JSON.parse(result);
+          for (fieldName in errors['fields']) {
+            var field = $1('[name=' + fieldName + ']', el)
+            if (field) $addClass(field, 'error')
+          }
         }
         return
       }
-      el.innerHTML += result
+      form.reset()
+      if (disgo.onSubmitSuccess) {
+        disgo.onSubmitSuccess(status, result, xhr)
+      } else {
+        el.innerHTML += result
+      }
     })
   }
 
