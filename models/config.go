@@ -9,6 +9,7 @@ type Config struct {
 		Approval bool
 		Origin   []string
 		Markdown bool
+		Secret   string
 	}
 	Database struct {
 		Driver string

@@ -1,4 +1,6 @@
 [general]
+;; secret used to encrypt the session
+secret = CHANGEME
 ;; admins must approve comments new comments
 ;approval
 ;; list of websites that are allowed to post comments
