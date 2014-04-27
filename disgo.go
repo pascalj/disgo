@@ -53,7 +53,7 @@ func main() {
 		r.Get(`/:id`, handler.GetComment)
 		r.Post(``, binding.Bind(models.Comment{}), rateLimit, handler.CreateComment)
 		r.Get(``, handler.GetComments)
-		r.Post(`/approve/:id`, handler.ApproveComment)
+		r.Post(`/approve/:id`, handler.RequireLogin, handler.ApproveComment)
 		r.Delete(`/:id`, handler.DestroyComment)
 	})
 	r.Group(`/admin`, func(r martini.Router) {
