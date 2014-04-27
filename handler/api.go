@@ -13,10 +13,8 @@ import (
 )
 
 func GetComments(
-	res http.ResponseWriter,
 	ren render.Render,
 	view models.View,
-	params martini.Params,
 	dbmap *gorp.DbMap,
 	session sessions.Session,
 	req *http.Request,
@@ -63,7 +61,7 @@ func UpdateComment(ren render.Render, params martini.Params, comment models.Comm
 	}
 }
 
-func ApproveComment(ren render.Render, params martini.Params, req *http.Request, dbmap *gorp.DbMap) {
+func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
 	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
 		ren.Error(404)
@@ -110,17 +108,17 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 	}
 }
 
-func MapView(c martini.Context, w http.ResponseWriter, r *http.Request) {
-	accept := r.Header["Accept"]
+func MapView(ctx martini.Context, res http.ResponseWriter, req *http.Request) {
+	accept := req.Header["Accept"]
 	if accept[0] != "" {
 		accept = strings.Split(accept[0], ",")
 	}
 	switch accept[0] {
 	case "text/html":
-		c.MapTo(models.HtmlView{}, (*models.View)(nil))
-		w.Header().Set("Content-Type", "text/html")
+		ctx.MapTo(models.HtmlView{}, (*models.View)(nil))
+		res.Header().Set("Content-Type", "text/html")
 	default:
-		c.MapTo(models.JsonView{}, (*models.View)(nil))
-		w.Header().Set("Content-Type", "application/json")
+		ctx.MapTo(models.JsonView{}, (*models.View)(nil))
+		res.Header().Set("Content-Type", "application/json")
 	}
 }

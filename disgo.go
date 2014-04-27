@@ -34,7 +34,7 @@ func init() {
 	cfg = models.LoadConfig()
 	m.Map(cfg)
 	m.Map(initDb(cfg))
-	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte("secret"))))
+	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte(cfg.General.Secret))))
 	m.Use(cors.Allow(&cors.Options{
 		AllowOrigins:     cfg.General.Origin,
 		AllowCredentials: true,
