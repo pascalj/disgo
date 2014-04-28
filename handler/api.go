@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+// GetComments will display all comments for a given URL-parameter. If configured, it only
+// displays approved comments.
 func GetComments(
 	ren render.Render,
 	view models.View,
@@ -38,6 +40,7 @@ func GetComments(
 	}
 }
 
+// GetComment show one comment by id.
 func GetComment(ren render.Render, view models.View, params martini.Params, dbmap *gorp.DbMap) {
 	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
@@ -48,19 +51,7 @@ func GetComment(ren render.Render, view models.View, params martini.Params, dbma
 	}
 }
 
-func UpdateComment(ren render.Render, params martini.Params, comment models.Comment, req *http.Request, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.JSON(404, nil)
-	} else {
-		comment := obj.(*models.Comment)
-		comment.Email = req.FormValue("email")
-		comment.Body = req.FormValue("body")
-		comment.Url = req.FormValue("url")
-		ren.JSON(200, comment)
-	}
-}
-
+// ApproveComment allows admins to approve a comment by id.
 func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
 	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
@@ -73,6 +64,8 @@ func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 	}
 }
 
+// CreateComment validates and creates a new comment. It also saves the client's IP-adress
+// to reduce spam.
 func CreateComment(ren render.Render,
 	view models.View,
 	comment models.Comment,
@@ -93,6 +86,7 @@ func CreateComment(ren render.Render,
 	}
 }
 
+// DestroyComment deletes a comment from the database by id.
 func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
 	obj, err := dbmap.Get(models.Comment{}, params["id"])
 	if err != nil || obj == nil {
@@ -108,6 +102,8 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 	}
 }
 
+// MapView maps the View type for martini depending on the accept header. It is used
+// to generate the appropriate output for html and json.
 func MapView(ctx martini.Context, res http.ResponseWriter, req *http.Request) {
 	accept := req.Header["Accept"]
 	if accept[0] != "" {

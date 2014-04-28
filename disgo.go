@@ -31,7 +31,8 @@ var (
 
 func init() {
 	m = martini.Classic()
-	cfg = models.LoadConfig()
+	cfg, err := models.LoadConfig()
+	checkErr(err, "Unable to load config file: ")
 	m.Map(cfg)
 	m.Map(initDb(cfg))
 	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte(cfg.General.Secret))))
@@ -49,12 +50,13 @@ func init() {
 
 func main() {
 	r := martini.NewRouter()
+
 	r.Group(`/comments`, func(r martini.Router) {
 		r.Get(`/:id`, handler.GetComment)
 		r.Post(``, binding.Bind(models.Comment{}), rateLimit, handler.CreateComment)
 		r.Get(``, handler.GetComments)
 		r.Post(`/approve/:id`, handler.RequireLogin, handler.ApproveComment)
-		r.Delete(`/:id`, handler.DestroyComment)
+		r.Delete(`/:id`, handler.RequireLogin, handler.DestroyComment)
 	})
 	r.Group(`/admin`, func(r martini.Router) {
 		r.Get(``, handler.RequireLogin, handler.AdminIndex)
@@ -72,7 +74,7 @@ func main() {
 
 func initDb(cfg models.Config) *gorp.DbMap {
 	db, err := sql.Open(cfg.Database.Driver, cfg.Database.Access)
-	checkErr(err, "sql.Open failed")
+	checkErr(err, "Could not open database: ")
 	var dbmap *gorp.DbMap
 	switch cfg.Database.Driver {
 	case "mysql":
@@ -87,12 +89,16 @@ func initDb(cfg models.Config) *gorp.DbMap {
 	dbmap.AddTableWithName(models.Comment{}, "comments").SetKeys(true, "Id")
 	dbmap.AddTableWithName(models.User{}, "users").SetKeys(true, "Id")
 	err = dbmap.CreateTablesIfNotExists()
-	checkErr(err, "Create tables failed")
+	checkErr(err, "Could not create database tables: ")
 	return dbmap
 }
 
-func rateLimit(ren render.Render, req *http.Request,
-	s sessions.Session, comment models.Comment, cfg models.Config, dbmap *gorp.DbMap) {
+func rateLimit(ren render.Render,
+	req *http.Request,
+	s sessions.Session,
+	comment models.Comment,
+	cfg models.Config,
+	dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
 		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", strings.Split(req.RemoteAddr, ":")[0], duration)

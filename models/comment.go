@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Comment represents a single comment with all its associated data.
 type Comment struct {
 	Id       int64  `form:"-"`
 	Created  int64  `form:"-"`
@@ -20,6 +21,15 @@ type Comment struct {
 	Approved bool   `form:"-"`
 }
 
+// PaginatedComments helps to easily divide a set of Comments into TotalPages/PerPage slices.
+type PaginatedComments struct {
+	TotalPages int64
+	Page       int64
+	PerPage    int64
+	Comments   []Comment
+}
+
+// NewComment creates a comment and sets the current time as its Created date.
 func NewComment(email, name, title, body, url, ip, id string) Comment {
 	return Comment{
 		Created:  time.Now().Unix(),
@@ -33,6 +43,7 @@ func NewComment(email, name, title, body, url, ip, id string) Comment {
 	}
 }
 
+// MarshalJSON implements the Marshal interface to serialize the comment.
 func (c *Comment) MarshalJSON() ([]byte, error) {
 	data := map[string]interface{}{
 		"id":         c.Id,
@@ -46,6 +57,7 @@ func (c *Comment) MarshalJSON() ([]byte, error) {
 	return json.Marshal(data)
 }
 
+// Validate takes a comment and sets errors if any information is missing or wrong.
 func (comment Comment) Validate(errors *binding.Errors, req *http.Request) {
 	if len(comment.Name) == 0 {
 		errors.Fields["name"] = "Please enter a name."

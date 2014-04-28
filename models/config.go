@@ -4,6 +4,7 @@ import (
 	"code.google.com/p/gcfg"
 )
 
+// Config represents the user's config that's read from a gcfg file.
 type Config struct {
 	General struct {
 		Approval bool
@@ -31,11 +32,9 @@ type Config struct {
 	}
 }
 
-func LoadConfig() Config {
+// LoadConfig loads the config from disc and outputs an error if the file could no be read.
+func LoadConfig() (Config, error) {
 	var cfg Config
 	err := gcfg.ReadFileInto(&cfg, "disgo.gcfg")
-	if err != nil {
-		panic(err)
-	}
-	return cfg
+	return cfg, err
 }

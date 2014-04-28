@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// AdminIndex shows the overview of the admin interface with latest comments.
 func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
 	var comments []models.Comment
 	dbmap.Select(&comments, "select * from comments order by created desc limit 10")
@@ -18,6 +19,7 @@ func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
 	})
 }
 
+// UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
 func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap) {
 	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
 	if err == nil && count > 0 {
@@ -32,12 +34,15 @@ func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap) {
 
 }
 
+// GetRegister shows the register form.
 func GetRegister(ren render.Render) {
 	ren.HTML(200, "admin/register", nil, render.HTMLOptions{
 		Layout: "admin/layout",
 	})
 }
 
+// PostUser will create a new user when no other users are in the database.
+// If users are present, it will redirect to the login.
 func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap) {
 	if models.UserCount(dbmap) == 0 {
 		email, password := req.FormValue("email"), req.FormValue("password")
@@ -51,6 +56,8 @@ func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap) {
 	}
 }
 
+// RegireLogin is a middleware that ensures that only an admin call the following
+// handler(s).
 func RequireLogin(rw http.ResponseWriter, req *http.Request,
 	s sessions.Session, dbmap *gorp.DbMap, c martini.Context) {
 	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
@@ -64,6 +71,7 @@ func RequireLogin(rw http.ResponseWriter, req *http.Request,
 	c.Map(user)
 }
 
+// GetLogin shows the login form for the backend.
 func GetLogin(ren render.Render, dbmap *gorp.DbMap) {
 	if models.UserCount(dbmap) > 0 {
 		ren.HTML(200, "admin/login", nil, render.HTMLOptions{
@@ -75,6 +83,7 @@ func GetLogin(ren render.Render, dbmap *gorp.DbMap) {
 
 }
 
+// PostLogin takes the email and password parameter and logs the user in if they are correct.
 func PostLogin(ren render.Render, req *http.Request, session sessions.Session, dbmap *gorp.DbMap) {
 	var user models.User
 
@@ -89,6 +98,7 @@ func PostLogin(ren render.Render, req *http.Request, session sessions.Session, d
 	ren.Redirect("/admin/")
 }
 
+// PostLogout logs the user out and redirects to the login page.
 func PostLogout(ren render.Render, session sessions.Session) {
 	session.Clear()
 	ren.Redirect("/login")

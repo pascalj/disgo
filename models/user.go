@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// User is a backend user/admin.
 type User struct {
 	Id       int64  `form:"-"`
 	Created  int64  `form:"-"`
@@ -13,6 +14,7 @@ type User struct {
 	Password string `binding:"required" form:"password"`
 }
 
+// NewUser creates a new user while automatically hashing the password.
 func NewUser(email, password string) User {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	return User{
@@ -22,6 +24,7 @@ func NewUser(email, password string) User {
 	}
 }
 
+// UserCount gets the number of users already in the database.
 func UserCount(dbmap *gorp.DbMap) int {
 	var ids []string
 	dbmap.Select(&ids, "select id from users")

@@ -8,10 +8,14 @@ import (
 	"text/template"
 )
 
+// Notifier is used to notify the admins of certain events. Currently it
+// only supports Emails.
 type Notifier struct {
 	Config models.Config
 }
 
+// CommentCreated sends out a notification if a comment was added. It respects the
+// 'notify' setting in the config file.
 func (notifier *Notifier) CommentCreated(comment *models.Comment) {
 	if notifier.Config.Email.Notify {
 		notifier.sendMail(notifier.Config.Email.From, notifier.Config.Email.To, newCommentTemplate(comment))
@@ -41,6 +45,7 @@ func (notifier *Notifier) sendMail(from string, to []string, text []byte) error 
 		text)
 }
 
+// MapNotifier maps the Notifier type for the martini framework.
 func MapNotifier(cfg models.Config) *Notifier {
 	notifier := new(Notifier)
 	notifier.Config = cfg
