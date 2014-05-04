@@ -7,10 +7,11 @@ import (
 // Config represents the user's config that's read from a gcfg file.
 type Config struct {
 	General struct {
-		Approval bool
-		Origin   []string
-		Markdown bool
-		Secret   string
+		Approval  bool
+		Origin    []string
+		Markdown  bool
+		Secret    string
+		Templates string
 	}
 	Database struct {
 		Driver string
@@ -33,8 +34,8 @@ type Config struct {
 }
 
 // LoadConfig loads the config from disc and outputs an error if the file could no be read.
-func LoadConfig() (Config, error) {
+func LoadConfig(path string) (Config, error) {
 	var cfg Config
-	err := gcfg.ReadFileInto(&cfg, "disgo.gcfg")
+	err := gcfg.ReadFileInto(&cfg, path)
 	return cfg, err
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
@@ -25,27 +26,21 @@ import (
 )
 
 var (
-	m   *martini.ClassicMartini
-	cfg models.Config
+	m       *martini.ClassicMartini
+	cfg     models.Config
+	cfgPath string
+	help    bool
 )
 
 func init() {
-	m = martini.Classic()
-	cfg, err := models.LoadConfig()
-	checkErr(err, "Unable to load config file: ")
-	m.Map(cfg)
-	m.Map(initDb(cfg))
-	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte(cfg.General.Secret))))
-	m.Use(cors.Allow(&cors.Options{
-		AllowOrigins:     cfg.General.Origin,
-		AllowCredentials: true,
-	}))
-	m.Use(method.Override())
-	m.Use(render.Renderer(render.Options{
-		Funcs: viewhelper(),
-	}))
-	m.Use(handler.MapView)
-	m.Map(service.MapNotifier(cfg))
+	flag.StringVar(&cfgPath, "config", "disgo.gcfg", "path to the config file")
+	flag.Parse()
+
+	var err error
+	cfg, err = models.LoadConfig(cfgPath)
+	checkErr(err, "Unable to load config file:")
+
+	setupMartini()
 }
 
 func main() {
@@ -144,6 +139,28 @@ func viewhelper() []template.FuncMap {
 func getIndex(ren render.Render, req *http.Request) {
 	base := []string{"http://", req.Host, req.URL.Path}
 	ren.HTML(200, "index", strings.Join(base, ""))
+}
+
+func setupMartini() {
+	m = martini.Classic()
+	m.Map(cfg)
+	m.Map(initDb(cfg))
+	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte(cfg.General.Secret))))
+	m.Use(cors.Allow(&cors.Options{
+		AllowOrigins:     cfg.General.Origin,
+		AllowCredentials: true,
+	}))
+	m.Use(method.Override())
+	templates := cfg.General.Templates
+	if templates == "" {
+		templates = "templates"
+	}
+	m.Use(render.Renderer(render.Options{
+		Funcs:     viewhelper(),
+		Directory: templates,
+	}))
+	m.Use(handler.MapView)
+	m.Map(service.MapNotifier(cfg))
 }
 
 func checkErr(err error, msg string) {
