@@ -44,7 +44,7 @@ $ make release
 
 ## Configuration
 
-The various switches in the [configuration sample file](config.gcfg.sample) are documented. To get started, just copy the `disgo.cfg.sample` to `disgo.gcfg` and edit it to your needs. Two things are mandatory:
+The various switches in the [configuration sample file](disgo.gcfg.sample) are documented. To get started, just copy the `disgo.cfg.sample` to `disgo.gcfg` and edit it to your needs. Two things are mandatory:
 a database must be configured, either MySQL or PostgreSQL and you need to set at least one `origin`. An origin is a URL where you want to allow comments. It may contain `*` as a wildcard. You can tell disgo to load a specific config by providing the `-config` command line parameter. It is strongly suggested to change the `secret`.
 
 The server will listen on `0.0.0.0:3000`. You can change that by setting the `HOST` and/or `PORT` environment variable.
