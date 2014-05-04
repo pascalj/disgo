@@ -12,7 +12,6 @@ import (
 	"github.com/martini-contrib/method"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
 	"github.com/pascalj/disgo/service"
@@ -76,10 +75,8 @@ func initDb(cfg models.Config) *gorp.DbMap {
 		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 	case "postgres":
 		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-	case "sqlite3":
-		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.SqliteDialect{}}
 	default:
-		panic("No valid SQL driver specified. Options are: mysql, postgres, sqlite3.")
+		panic("No valid SQL driver specified. Options are: mysql, postgres.")
 	}
 	dbmap.AddTableWithName(models.Comment{}, "comments").SetKeys(true, "Id")
 	dbmap.AddTableWithName(models.User{}, "users").SetKeys(true, "Id")
