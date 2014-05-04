@@ -1,18 +1,19 @@
 [general]
-;; secret used to encrypt the session
+;; secret used to encrypt the sessionstore
 secret = CHANGEME
-;; admins must approve comments new comments
+;; if set admins must approve comments new comments
 ;approval
 ;; list of websites that are allowed to post comments
 ;origin = http://host1.com
 ;origin = http://host2.com
 ;; uncomment to allow markdown in comments
+;markdown
 ;; templates directory (default: templates)
 ;templates = templates
-;markdown
 
 [database]
 ;; database driver: mysql, postgres
+driver = postgres
 ;; for mysql
 ;access = username:password@tcp(localhost:3306)/dbname
 ;; for postgres

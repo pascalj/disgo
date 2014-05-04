@@ -17,6 +17,7 @@ release: clean deps golang-crosscompile
 	go-linux-arm build -o build/disgo-linux-armv6l; \
 	go-freebsd-386 build -o build/disgo-freebsd-i386; \
 	go-freebsd-amd64 build -o build/disgo-freebsd-amd64
+	cp -r public templates disgo.gcfg.sample README.md build/
 
 golang-crosscompile:
 	git clone https://github.com/davecheney/golang-crosscompile.git
