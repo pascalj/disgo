@@ -23,7 +23,7 @@ Here's what the admin interface looks like:
 
 ### Binary release
 
-You can download a ready-to-go release for most common platforms (FreeBSD, Linux, OS X, Windows). Just unpack and [configure](#configuration) it.
+You can [download a ready-to-go release](https://github.com/pascalj/disgo/releases) for most common platforms (FreeBSD, Linux, OS X, Windows). Just unpack and [configure](#configuration) it.
 
 ### Manual build
 
