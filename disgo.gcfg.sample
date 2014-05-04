@@ -12,14 +12,11 @@ secret = CHANGEME
 ;markdown
 
 [database]
-;; database driver: sqlite3, mysql, postgres
-driver = sqlite3
-;; for sqlite3
-access = disgo.sqlite3
+;; database driver: mysql, postgres
 ;; for mysql
 ;access = username:password@tcp(localhost:3306)/dbname
 ;; for postgres
-;access = user=username dbname=password host=localhost password=password sslmode=disable
+access = user=username dbname=password host=localhost password=password sslmode=disable
 
 [rate-limit]
 ;; enable rate limiting
