@@ -23,9 +23,9 @@ type Comment struct {
 
 // PaginatedComments helps to easily divide a set of Comments into TotalPages/PerPage slices.
 type PaginatedComments struct {
-	TotalPages int64
-	Page       int64
-	PerPage    int64
+	TotalPages int
+	Page       int
+	PerPage    int
 	Comments   []Comment
 }
 

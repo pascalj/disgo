@@ -8,12 +8,18 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
+	"strconv"
 )
 
 // AdminIndex shows the overview of the admin interface with latest comments.
-func AdminIndex(ren render.Render, dbmap *gorp.DbMap) {
-	var comments []models.Comment
-	dbmap.Select(&comments, "select * from comments order by created desc limit 10")
+func AdminIndex(req *http.Request, ren render.Render, dbmap *gorp.DbMap) {
+	qry := req.URL.Query()
+	page, err := strconv.Atoi(qry.Get("page"))
+
+	if err != nil {
+		page = 0
+	}
+	comments := paginatedComments(dbmap, page)
 	ren.HTML(200, "admin/index", comments, render.HTMLOptions{
 		Layout: "admin/layout",
 	})
@@ -102,4 +108,14 @@ func PostLogin(ren render.Render, req *http.Request, session sessions.Session, d
 func PostLogout(ren render.Render, session sessions.Session) {
 	session.Clear()
 	ren.Redirect("/login")
+}
+
+func paginatedComments(dbmap *gorp.DbMap, page int) *models.PaginatedComments {
+	var comments []models.Comment
+	pages, err := dbmap.SelectInt("select ceil(count(*)/10) from comments")
+	if err != nil {
+		pages = 1
+	}
+	dbmap.Select(&comments, "select * from comments order by created desc limit 10 offset ?", page*10)
+	return &models.PaginatedComments{int(pages), page, 10, comments}
 }

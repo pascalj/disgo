@@ -2,9 +2,23 @@
   <div class="large-6 columns">
     <h3>Recent comments</h3>
     <div class="comments">
-      {{range .}}
+      {{range .Comments}}
         {{template "admin/comment" .}}
       {{end}}
     </div>
+    {{if gt .TotalPages 1}}
+      <div class="pagination-centered">
+        <ul class="pagination">
+          {{$pagination := .}}
+          {{range $index, $element := .TotalPages|times}}
+            {{if eq $index $pagination.Page}}
+              <li class="current"><a href="">{{add $index 1}}</a></li>
+            {{else}}
+              <li><a href="/admin/?page={{$index}}">{{add $index 1}}</a></li>
+            {{end}}
+          {{end}}
+        </ul>
+      </div>
+    {{end}}
   </div>
 </div>

@@ -131,6 +131,12 @@ func viewhelper() []template.FuncMap {
 				output := blackfriday.MarkdownCommon([]byte(args[0]))
 				return template.HTML(output)
 			},
+			"times": func(args ...int) []struct{} {
+				return make([]struct{}, args[0])
+			},
+			"add": func(args ...int) int {
+				return args[0] + args[1]
+			},
 		},
 	}
 }

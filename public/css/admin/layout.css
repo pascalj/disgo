@@ -46,3 +46,7 @@ footer {
   white-space: nowrap;
   overflow: hidden;
 }
+
+.pagination {
+  text-align: center;
+}
