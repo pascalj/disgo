@@ -19,6 +19,7 @@ import (
 	"github.com/ungerik/go-gravatar"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -93,13 +94,39 @@ func rateLimit(ren render.Render,
 	dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
-		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", strings.Split(req.RemoteAddr, ":")[0], duration)
-
-		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
-			errors := map[string]string{"overall": "Rate limit reached."}
+		ip, err := relevantIpBytes(req.RemoteAddr)
+		errors := map[string]string{"overall": "Rate limit reached."}
+		if err != nil {
 			ren.JSON(429, errors)
 			return
 		}
+		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", ip, duration)
+
+		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
+			ren.JSON(429, errors)
+			return
+		}
+	}
+}
+
+// Get relevant bytes from the IP address. This is used to rate limit v6 addresses as
+// the last 64 will get shuffled.
+func relevantIpBytes(remoteAddr string) (string, error) {
+	ip, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		return "", err
+	}
+
+	parsedIp := net.ParseIP(ip)
+
+	if parsedIp.To4() != nil {
+		return ip, nil
+	} else {
+		// we got a v6 address, just grab the first 8 bytes
+		for i := 8; i < len(parsedIp); i++ {
+			parsedIp[i] = 0
+		}
+		return parsedIp.String(), nil
 	}
 }
 
