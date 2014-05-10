@@ -78,6 +78,31 @@ Replace `example.com` with the location of your disgo installation. To display a
 
 The `data-disgo-url` does not need to be the current URL, it does not even need to be a URL. However, it is used to identify the content that the comments belong to. So if you're hosting a blog and have comments on your posts, it's recommended to use the URL of the posts as `data-disgo-url`.
 
+## Client callbacks
+
+The Javascript disgo provides works but you might want to tweak it a little bit. For example, you might want to display fancy error messages or animate a new comment. For that purpose there are some callbacks:
+
+- `onSubmitError(status, result, xhr, form)`
+- `onSubmitSuccess(status, result, xhr, form)`
+
+Both replace the default actions that do not do anything fancy whatsoever. `onSubmitError` gets called when the disgo server rejects a new comment, for example because the validation did not complete successfully. `onSubmitSuccess` gets called once the comment got saved. `result` will contain the server's answer.
+
+To configure the callbacks, simply set them in the `disgo` object that also configures the base URL:
+
+```javascript
+var disgo = {
+    base: 'http://example.com/',
+    onSubmitSuccess: function(status, result, xhr, form) {
+		console.log(result)
+    }
+}
+...
+```
+
+## Templates
+
+If you're not happy with the pretty generic HTML templates, you can specify a different `template` directory in the config file. Just copy the default templates to a new location, edit them to your needs and adjust the `template` path.
+
 ## Known issues
 
 *Disgo will currently run only at the top-level of a (sub-)domain.* Even if you put it behind a reverse-proxy and serve it under a different directory, certain links will break.
