@@ -10,6 +10,8 @@ secret = CHANGEME
 ;markdown
 ;; templates directory (default: templates)
 ;templates = templates
+;; the base that gets prefixed before all paths
+;prefix = /disgo
 
 [database]
 ;; database driver: mysql, postgres

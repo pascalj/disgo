@@ -12,6 +12,7 @@ type Config struct {
 		Markdown  bool
 		Secret    string
 		Templates string
+		Prefix    string
 	}
 	Database struct {
 		Driver string

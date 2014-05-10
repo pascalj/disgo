@@ -156,12 +156,19 @@ func viewhelper() []template.FuncMap {
 			"add": func(args ...int) int {
 				return args[0] + args[1]
 			},
+			"base": func() string {
+				return cfg.General.Prefix
+			},
 		},
 	}
 }
 
-func getIndex(ren render.Render, req *http.Request) {
-	base := []string{"http://", req.Host, req.URL.Path}
+func getIndex(ren render.Render, req *http.Request, cfg models.Config) {
+	scheme := "http"
+	if req.TLS != nil {
+		scheme = "https"
+	}
+	base := []string{scheme, "://", req.Host, cfg.General.Prefix}
 	ren.HTML(200, "index", strings.Join(base, ""))
 }
 

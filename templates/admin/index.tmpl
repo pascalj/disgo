@@ -14,7 +14,7 @@
             {{if eq $index $pagination.Page}}
               <li class="current"><a href="">{{add $index 1}}</a></li>
             {{else}}
-              <li><a href="/admin/?page={{$index}}">{{add $index 1}}</a></li>
+              <li><a href="admin/?page={{$index}}">{{add $index 1}}</a></li>
             {{end}}
           {{end}}
         </ul>

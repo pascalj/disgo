@@ -6,10 +6,11 @@
         <title>Disgo - Admin</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <base href="{{.}}">
 
-        <link rel="stylesheet" href="/css/admin/normalize.min.css">
-        <link rel="stylesheet" href="/css/admin/foundation.min.css">
-        <link rel="stylesheet" href="/css/admin/layout.css">
+        <link rel="stylesheet" href="css/admin/normalize.min.css">
+        <link rel="stylesheet" href="css/admin/foundation.min.css">
+        <link rel="stylesheet" href="css/admin/layout.css">
         <style type="text/css">
         pre.hl  { color:#000000; font-family:'Courier New',monospace;}
         .hl.num { color:#b07e00; }
@@ -36,12 +37,12 @@
         <nav class="top-bar" data-topbar>
             <ul class="title-area">
                 <li class="name">
-                    <h1><a href="/"><img src="/img/disgo.svg" alt=""> Disgo</a></h1>
+                    <h1><a href="/"><img src="img/disgo.svg" alt=""> Disgo</a></h1>
                 </li>
             </ul>
             <section class="top-bar-section">
                 <ul class="right">
-                    <li><a href="/admin">Admin</a></li>
+                    <li><a href="admin">Admin</a></li>
                 </ul>
             </section>
         </nav>
@@ -53,7 +54,7 @@
 
         <pre class="hl panel"><span class="hl kwa">&lt;script&gt;</span>
 <span class="hl kwa">var</span> disgo <span class="hl opt">= {</span>
-    base<span class="hl opt">:</span> <span class="hl str">'http://localhost:3000'</span>
+    base<span class="hl opt">:</span> <span class="hl str">'{{.}}'</span>
 <span class="hl opt">}</span>
 document<span class="hl opt">.</span><span class="hl kwd">write</span><span class="hl opt">(</span><span class="hl str">'&lt;script src=&quot;'</span> <span class="hl opt">+</span> disgo<span class="hl opt">.</span>base <span class="hl opt">+</span> <span class="hl str">'/js/disgo.js&quot;&gt;</span><span class="hl esc">\x3C</span><span class="hl str">/script&gt;'</span><span class="hl opt">)</span>
 <span class="hl kwa">&lt;/script&gt;</span></pre>
