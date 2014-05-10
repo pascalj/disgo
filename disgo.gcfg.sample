@@ -10,7 +10,8 @@ secret = CHANGEME
 ;markdown
 ;; templates directory (default: templates)
 ;templates = templates
-;; the base that gets prefixed before all paths
+;; prefix all paths (default: /)
+;; useful if you're hosting disgo behind a reverse proxy
 ;prefix = /disgo
 
 [database]

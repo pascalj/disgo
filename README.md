@@ -105,8 +105,6 @@ If you're not happy with the pretty generic HTML templates, you can specify a di
 
 ## Known issues
 
-*Disgo will currently run only at the top-level of a (sub-)domain.* Even if you put it behind a reverse-proxy and serve it under a different directory, certain links will break.
-
 *Only one admin is configurable.* There is no user management interface, yet.
 
 ## Contributing

@@ -157,7 +157,11 @@ func viewhelper() []template.FuncMap {
 				return args[0] + args[1]
 			},
 			"base": func() string {
-				return cfg.General.Prefix
+				if cfg.General.Prefix != "" {
+					return cfg.General.Prefix
+				} else {
+					return "/"
+				}
 			},
 		},
 	}
