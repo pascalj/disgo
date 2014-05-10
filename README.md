@@ -70,7 +70,7 @@ document.write('<script src="' + disgo.base + '/js/disgo.js">\x3C/script>')
 </script>
 ```
 
-Replace `example.com` with the location of your disgo installation. To display a form and comments, add a `div` with a `data-disgo-url` attribute:
+Replace `example.com` with the location of your Disgo installation. To display a form and comments, add a `div` with a `data-disgo-url` attribute:
 
 ```html
 <div data-disgo-url="http://example.com/2014/04/01/facebook-buys-golang"></div>
@@ -80,7 +80,7 @@ The `data-disgo-url` does not need to be the current URL, it does not even need 
 
 ## Client callbacks
 
-The Javascript disgo provides works but you might want to tweak it a little bit. For example, you might want to display fancy error messages or animate a new comment. For that purpose there are some callbacks:
+The Javascript Disgo provides works but you might want to tweak it a little bit. For example, you might want to display fancy error messages or animate a new comment. For that purpose there are some callbacks:
 
 - `onSubmitError(status, result, xhr, form)`
 - `onSubmitSuccess(status, result, xhr, form)`
