@@ -48,15 +48,16 @@
         }
         return
       }
-      form.reset()
       if (disgo.onSubmitSuccess) {
-        disgo.onSubmitSuccess(status, result, xhr)
+        disgo.onSubmitSuccess(status, result, xhr, form)
       } else {
-        el.innerHTML += result
+        form.body.value = ''
+        $1('.comments', el).innerHTML += result
       }
     })
   }
 
+  // helper functions, see http://youmightnotneedjquery.com
   function $(sel, ctx) {
     if (ctx) {
       return ctx.querySelectorAll(sel)
