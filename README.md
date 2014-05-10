@@ -4,7 +4,7 @@ Disgo is a simple commenting system for the web, written in Go. It is inspired b
 
 - Ajax-based: no Iframes
 - no Javascript dependency, especially not jQuery
-- works on modern browsers (CORS is required)
+- works on all [modern browsers](http://caniuse.com/cors) and Internet Explorer >=10
 - supports MySQL and PostgreSQL
 - customizable CSS (in fact, there is currently no default client CSS)
 

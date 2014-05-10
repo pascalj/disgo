@@ -91,26 +91,42 @@
   }
 
   function $ajax(method, url, data, headers, handler) {
-    var invocation = new XMLHttpRequest();
+    var invocation = createCorsRequest(method, url);
+    if (invocation == null) {
+      return
+    }
     var dataString = '';
     for(field in data) {
       dataString += field + '=' + encodeURIComponent(data[field]) + '&'
     }
 
-    if(invocation) {
-      invocation.withCredentials = true;
-      invocation.open(method, url, true);
-      invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
-      for (headerName in headers) {
-        invocation.setRequestHeader(headerName, headers[headerName])
-      }
-      invocation.onreadystatechange = function(xhr) {
-        if (invocation.readyState == 4) {
-          handler(invocation.status, invocation.responseText, invocation);
-        }
-      }
-      invocation.send(dataString);
+    invocation.withCredentials = true;
+    invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
+    for (headerName in headers) {
+      invocation.setRequestHeader(headerName, headers[headerName])
     }
+    invocation.onload = function() {
+      handler(invocation.status, invocation.responseText, invocation);
+    }
+    invocation.send(dataString);
+  }
+
+  // thanks, microsoft
+  function createCorsRequest(method, url) {
+    var xhr = new XMLHttpRequest()
+    if ("withCredentials" in xhr) {
+      xhr.open(method, url, true)
+    } else if (typeof XDomainRequest != 'undefined') {
+      xhr = new XDomainRequest()
+      xhr.open(method, url)
+      if (!("setRequestHeader" in xhr)) {
+        return null
+      }
+    } else {
+      // CORS unavailible
+      xhr = null;
+    }
+    return xhr
   }
 
   window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
