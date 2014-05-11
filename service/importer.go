@@ -26,6 +26,7 @@ type post struct {
 	Message   string    `xml:"message"`
 	CreatedAt string    `xml:"createdAt"`
 	IsDeleted string    `xml:"isDeleted"`
+	IsSpam    string    `xml:"isSpam"`
 	Author    author    `xml:"author"`
 	IpAddress string    `xml:"ipAddress"`
 	Thread    threadRef `xml:"thread"`
@@ -58,6 +59,7 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 		}
 		comment := models.NewComment(post.Author.Email, post.Author.Name, "", post.Message, thread.Link, post.IpAddress, "")
 		comment.Created = createdAt.Unix()
+		comment.Approved = post.IsSpam == "false"
 		comments = append(comments, comment)
 	}
 
