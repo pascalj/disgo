@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"flag"
 	"github.com/coopernurse/gorp"
@@ -21,19 +22,22 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
 
 var (
-	m       *martini.ClassicMartini
-	cfg     models.Config
-	cfgPath string
-	help    bool
+	m          *martini.ClassicMartini
+	cfg        models.Config
+	cfgPath    string
+	importPath string
+	help       bool
 )
 
 func init() {
 	flag.StringVar(&cfgPath, "config", "disgo.gcfg", "path to the config file")
+	flag.StringVar(&importPath, "import", "", "Disqus XML file to import")
 	flag.Parse()
 
 	var err error
@@ -44,6 +48,14 @@ func init() {
 }
 
 func main() {
+	if importPath != "" {
+		file, err := os.Open(importPath)
+		checkErr(err, "Could not open Disqus XML file:")
+		reader := bufio.NewReader(file)
+		service.Import(initDb(cfg), reader)
+		return
+	}
+
 	r := martini.NewRouter()
 
 	r.Group(`/comments`, func(r martini.Router) {
