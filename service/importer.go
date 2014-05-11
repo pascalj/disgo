@@ -53,6 +53,9 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 		if err != nil {
 			fmt.Errorf("Could not find thread reference", post.Thread.Id)
 		}
+		if post.IsDeleted == "true" {
+			continue
+		}
 		createdAt, err := time.Parse(time.RFC3339, post.CreatedAt)
 		if err != nil {
 			createdAt = time.Now()
