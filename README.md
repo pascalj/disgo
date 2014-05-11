@@ -14,6 +14,7 @@ Optional:
 - e-mail notification of new comment
 - IP address-based rate limiting
 - markdown support
+- Disqus import
 
 Here's what the admin interface looks like:
 ![Disg Admin Interface](http://pascalj.github.io/disgo.png)
@@ -102,6 +103,14 @@ var disgo = {
 ## Templates
 
 If you're not happy with the pretty generic HTML templates, you can specify a different `template` directory in the config file. Just copy the default templates to a new location, edit them to your needs and adjust the `template` path.
+
+## Disqus import
+
+Disqo can import your existing comments from Disqus. Just [export](http://disqus.com/admin/discussions/export/) all comments and execute:
+
+```
+$ disgo -import path/to/disqus.xml
+```
 
 ## Known issues
 
