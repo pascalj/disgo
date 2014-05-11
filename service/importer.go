@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/coopernurse/gorp"
+	"github.com/kennygrant/sanitize"
 	"github.com/pascalj/disgo/models"
 	"io"
 	"time"
@@ -51,7 +52,7 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 	for _, post := range parsed.Posts {
 		thread, err := parsed.findThread(post.Thread.Id)
 		if err != nil {
-			fmt.Errorf("Could not find thread reference", post.Thread.Id)
+			fmt.Println("Could not find thread reference", post.Thread.Id)
 		}
 		if post.IsDeleted == "true" {
 			continue
@@ -60,7 +61,8 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 		if err != nil {
 			createdAt = time.Now()
 		}
-		comment := models.NewComment(post.Author.Email, post.Author.Name, "", post.Message, thread.Link, post.IpAddress, "")
+		body := sanitize.HTML(post.Message)
+		comment := models.NewComment(post.Author.Email, post.Author.Name, "", body, thread.Link, post.IpAddress, "")
 		comment.Created = createdAt.Unix()
 		comment.Approved = post.IsSpam == "false"
 		comments = append(comments, comment)
@@ -72,7 +74,7 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 	for i, comment := range comments {
 		if err := dbmap.Insert(&comment); err != nil {
 			total--
-			fmt.Errorf("Could not import comment", i)
+			fmt.Println("Could not import comment", i)
 		}
 	}
 
@@ -83,7 +85,7 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 
 func (dis *disqus) findThread(id string) (thread, error) {
 	for _, thread := range dis.Threads {
-		if thread.Id == id {
+		if thread.ThreadId == id {
 			return thread, nil
 		}
 	}
