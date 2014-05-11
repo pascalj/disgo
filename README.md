@@ -106,7 +106,7 @@ If you're not happy with the pretty generic HTML templates, you can specify a di
 
 ## Disqus import
 
-Disqo can import your existing comments from Disqus. Just [export](http://disqus.com/admin/discussions/export/) all comments and execute:
+Disgo can import your existing comments from Disqus. Just [export](http://disqus.com/admin/discussions/export/) all comments and execute:
 
 ```
 $ disgo -import path/to/disqus.xml
