@@ -15,7 +15,6 @@ type Comment struct {
 	Body     string `binding:"required" form:"body"`
 	Url      string `binding:"required" form:"url"`
 	ClientIp string `form:"-"`
-	ClientId string `form:"-"`
 	Approved bool   `form:"-"`
 }
 
@@ -36,7 +35,6 @@ func NewComment(email, name, title, body, url, ip, id string) Comment {
 		Body:     body,
 		Url:      url,
 		ClientIp: ip,
-		ClientId: id,
 		Approved: false,
 	}
 }

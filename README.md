@@ -17,7 +17,7 @@ Optional:
 - Disqus import
 
 Here's what the admin interface looks like:
-![Disg Admin Interface](http://pascalj.github.io/disgo.png)
+![Disgo Admin Interface](http://pascalj.github.io/disgo.png)
 
 
 ## Installation
