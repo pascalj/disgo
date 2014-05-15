@@ -8,7 +8,6 @@ import (
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/method"
 	"github.com/martini-contrib/render"
@@ -56,27 +55,10 @@ func main() {
 		return
 	}
 
-	r := martini.NewRouter()
-
-	r.Group(`/comments`, func(r martini.Router) {
-		r.Get(`/:id`, handler.GetComment)
-		r.Post(``, binding.Bind(models.Comment{}), rateLimit, handler.CreateComment)
-		r.Get(``, handler.GetComments)
-		r.Post(`/approve/:id`, handler.RequireLogin, handler.ApproveComment)
-		r.Delete(`/:id`, handler.RequireLogin, handler.DestroyComment)
-	})
-	r.Group(`/admin`, func(r martini.Router) {
-		r.Get(``, handler.RequireLogin, handler.AdminIndex)
-		r.Get(`/unapproved`, handler.RequireLogin, handler.UnapprovedComments)
-	})
-	r.Get(`/login`, handler.GetLogin)
-	r.Post(`/login`, handler.PostLogin)
-	r.Post(`/logout`, handler.PostLogout)
-	r.Get(`/register`, handler.GetRegister)
-	r.Post(`/user`, handler.PostUser)
-	r.Get(`/`, getIndex)
-	m.Action(r.Handle)
-	m.Run()
+	app := handler.NewApp()
+	app.SetRoutes()
+	http.Handle("/", app.Router)
+	http.ListenAndServe(":3000", nil)
 }
 
 func initDb(cfg models.Config) *gorp.DbMap {
