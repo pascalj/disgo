@@ -45,8 +45,11 @@ $ make release
 
 ## Configuration
 
-The various switches in the [configuration sample file](disgo.gcfg.sample) are documented. To get started, just copy the `disgo.cfg.sample` to `disgo.gcfg` and edit it to your needs. Two things are mandatory:
-a database must be configured, either MySQL or PostgreSQL and you need to set at least one `origin`. An origin is a URL where you want to allow comments. It may contain `*` as a wildcard. You can tell disgo to load a specific config by providing the `-config` command line parameter. It is strongly suggested to change the `secret`.
+The various switches in the [configuration sample file](disgo.gcfg.sample) are documented. To get started, just copy the `disgo.gcfg.sample` to `disgo.gcfg` (yes, it's `.gcfg` and not `.cfg`) and edit it to your needs.
+
+Two things are mandatory:
+
+A database must be configured, either MySQL or PostgreSQL and you need to set at least one `origin`. An origin is a URL where you want to allow comments. It may contain `*` as a wildcard. You can tell disgo to load a specific config by providing the `-config` command line parameter. It is strongly suggested to change the `secret`.
 
 The server will listen on `0.0.0.0:3000`. You can change that by setting the `HOST` and/or `PORT` environment variable.
 
@@ -56,7 +59,7 @@ Fire up the server process:
 $ disgo
 ```
 
-After that, the admin interface will be available at the host and port you configured (e.g. http://localhost:3000/). The first time you access the admin panel you're asked to create an admin user.
+After that, the admin interface will be available at the host and port you configured (e.g. http://example.com:3000). The first time you access the admin panel you're asked to create an admin user.
 
 ## Embedding comments
 
@@ -65,13 +68,15 @@ Once you got everything up and running, it's easy to embedd comments in your web
 ```html
 <script>
 var disgo = {
-    base: 'http://example.com/'
+    base: 'http://example.com:3000'
 }
 document.write('<script src="' + disgo.base + '/js/disgo.js">\x3C/script>')
 </script>
 ```
 
-Replace `example.com` with the location of your Disgo installation. To display a form and comments, add a `div` with a `data-disgo-url` attribute:
+Replace `example.com:3000` with the location of your Disgo installation (or copy it from the admin interface, where it should be correctly displayed).
+
+To display a form and comments, add a `div` with a `data-disgo-url` attribute:
 
 ```html
 <div data-disgo-url="http://example.com/2014/04/01/facebook-buys-golang"></div>
@@ -92,7 +97,7 @@ To configure the callbacks, simply set them in the `disgo` object that also conf
 
 ```javascript
 var disgo = {
-    base: 'http://example.com/',
+    base: 'http://example.com:3000',
     onSubmitSuccess: function(status, result, xhr, form) {
 		console.log(result)
     }
