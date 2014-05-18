@@ -1,21 +1,15 @@
 package main
 
 import (
-	"bufio"
-	"database/sql"
 	"flag"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/martini-contrib/cors"
-	"github.com/martini-contrib/method"
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
-	"github.com/pascalj/disgo/service"
 	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
@@ -35,12 +29,6 @@ var (
 	app        *handler.App
 )
 
-type App struct {
-	Router *mux.Router
-	Db     *sql.DB
-	Config models.Config
-}
-
 func init() {
 	flag.StringVar(&cfgPath, "config", "disgo.gcfg", "path to the config file")
 	flag.StringVar(&importPath, "import", "", "Disqus XML file to import")
@@ -52,39 +40,20 @@ func init() {
 }
 
 func main() {
-	if importPath != "" {
-		file, err := os.Open(importPath)
-		checkErr(err, "Could not open Disqus XML file:")
-		reader := bufio.NewReader(file)
-		service.Import(initDb(cfg), reader)
-		return
-	}
+	// if importPath != "" {
+	// 	file, err := os.Open(importPath)
+	// 	checkErr(err, "Could not open Disqus XML file:")
+	// 	reader := bufio.NewReader(file)
+	// 	return
+	// }
 
 	app = handler.NewApp()
 	app.SetRoutes()
 	app.LoadConfig(cfgPath)
 	app.ConnectDb()
+	app.InitSession()
 	http.Handle("/", app.Router)
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
-}
-
-func initDb(cfg models.Config) *gorp.DbMap {
-	db, err := sql.Open(cfg.Database.Driver, cfg.Database.Access)
-	checkErr(err, "Could not open database: ")
-	var dbmap *gorp.DbMap
-	switch cfg.Database.Driver {
-	case "mysql":
-		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
-	case "postgres":
-		dbmap = &gorp.DbMap{Db: db, Dialect: gorp.PostgresDialect{}}
-	default:
-		panic("No valid SQL driver specified. Options are: mysql, postgres.")
-	}
-	dbmap.AddTableWithName(models.Comment{}, "comments").SetKeys(true, "Id")
-	dbmap.AddTableWithName(models.User{}, "users").SetKeys(true, "Id")
-	err = dbmap.CreateTablesIfNotExists()
-	checkErr(err, "Could not create database tables: ")
-	return dbmap
 }
 
 func rateLimit(ren render.Render,
@@ -166,28 +135,6 @@ func viewhelper() []template.FuncMap {
 			},
 		},
 	}
-}
-
-func setupMartini() {
-	m = martini.Classic()
-	m.Map(cfg)
-	m.Map(initDb(cfg))
-	m.Use(sessions.Sessions("session", sessions.NewCookieStore([]byte(cfg.General.Secret))))
-	m.Use(cors.Allow(&cors.Options{
-		AllowOrigins:     cfg.General.Origin,
-		AllowCredentials: true,
-	}))
-	m.Use(method.Override())
-	templates := cfg.General.Templates
-	if templates == "" {
-		templates = "templates"
-	}
-	m.Use(render.Renderer(render.Options{
-		Funcs:     viewhelper(),
-		Directory: templates,
-	}))
-	m.Use(handler.MapView)
-	m.Map(service.MapNotifier(cfg))
 }
 
 func checkErr(err error, msg string) {

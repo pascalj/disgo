@@ -4,7 +4,6 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strings"
@@ -13,40 +12,36 @@ import (
 
 // GetComments will display all comments for a given URL-parameter. If configured, it only
 // displays approved comments.
-func GetComments(
-	ren render.Render,
-	view models.View,
-	dbmap *gorp.DbMap,
-	session sessions.Session,
-	req *http.Request,
-	cfg models.Config) {
-	var comments []models.Comment
+func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 	qry := req.URL.Query()
-	if cfg.General.Approval {
-		dbmap.Select(&comments, "select * from comments where (approved = 1 OR email = :email) and url = :url",
-			map[string]interface{}{"email": session.Get("email"), "url": qry["url"][0]})
-	} else {
-		dbmap.Select(&comments, "select * from comments where url=:url", map[string]interface{}{"url": qry["url"][0]})
+	ses, _ := app.SessionStore.Get(req, "disgo")
+	email := ""
+	name := ""
+	if val := ses.Values["email"]; val != nil {
+		email = val.(string)
 	}
-	ctx := map[string]interface{}{
-		"email": session.Get("email"),
-		"name":  session.Get("name"),
+	if val := ses.Values["name"]; val != nil {
+		name = val.(string)
 	}
-	if comments != nil {
-		view.RenderComments(comments, ctx, ren)
-	} else {
-		view.RenderComments([]models.Comment{}, ctx, ren)
+	comments := make([]models.Comment, 0)
+	if qry["url"] == nil {
+		return
 	}
-}
 
-// GetComment show one comment by id.
-func GetComment(ren render.Render, view models.View, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.JSON(404, nil)
+	if app.Config.General.Approval {
+		comments = models.ApprovedComments(app.Db, qry["url"][0], email)
 	} else {
-		comment := obj.(*models.Comment)
-		view.RenderComment(*comment, nil, ren)
+		comments = models.AllComments(app.Db, qry["url"][0])
+	}
+
+	ctx := map[string]interface{}{
+		"email": email,
+		"name":  name,
+	}
+	_ = ctx
+
+	if len(comments) > 0 {
+		w.Write([]byte("success"))
 	}
 }
 

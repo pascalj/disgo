@@ -1,7 +1,9 @@
 package models
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"github.com/ungerik/go-gravatar"
 	"time"
 )
@@ -51,4 +53,70 @@ func (c *Comment) MarshalJSON() ([]byte, error) {
 		"approved":   c.Approved,
 	}
 	return json.Marshal(data)
+}
+
+func ApprovedComments(db *sql.DB, url string, email string) []Comment {
+	comments := make([]Comment, 0)
+	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
+	if err != nil {
+		logErr(err, "Could not load comments:")
+		return comments
+	}
+	defer rows.Close()
+	for rows.Next() {
+		comment := Comment{}
+		err := rows.Scan(
+			&comment.Id,
+			&comment.Created,
+			&comment.Email,
+			&comment.Name,
+			&comment.Body,
+			&comment.Url,
+			&comment.ClientIp,
+			&comment.Approved)
+		if err != nil {
+			logErr(err, "Error mapping comment:")
+		}
+		comments = append(comments, comment)
+	}
+	err = rows.Err()
+	if err != nil {
+		logErr(err, "Could not read comments")
+	}
+	return comments
+}
+
+func AllComments(db *sql.DB, url string) []Comment {
+	comments := make([]Comment, 0)
+	rows, err := db.Query("SELECT * FROM Comments WHERE Url = ?", url)
+	if err != nil {
+		logErr(err, "Could not load comments:")
+		return comments
+	}
+	defer rows.Close()
+	for rows.Next() {
+		comment := Comment{}
+		err := rows.Scan(
+			&comment.Id,
+			&comment.Created,
+			&comment.Email,
+			&comment.Name,
+			&comment.Body,
+			&comment.Url,
+			&comment.ClientIp,
+			&comment.Approved)
+		if err != nil {
+			logErr(err, "Error mapping comment:")
+		}
+		comments = append(comments, comment)
+	}
+	err = rows.Err()
+	if err != nil {
+		logErr(err, "Could not read comments")
+	}
+	return comments
+}
+
+func logErr(err error, description string) {
+	fmt.Println(description, err)
 }

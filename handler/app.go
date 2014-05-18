@@ -2,17 +2,18 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 )
 
 type App struct {
-	Router *mux.Router
-	Db     *sql.DB
-	Config models.Config
+	Router       *mux.Router
+	Db           *sql.DB
+	Config       models.Config
+	SessionStore sessions.Store
 }
 
 const (
@@ -52,10 +53,14 @@ func (app *App) LoadConfig(path string) error {
 	return nil
 }
 
+func (app *App) InitSession() {
+	app.SessionStore = sessions.NewCookieStore([]byte(app.Config.General.Secret))
+}
+
 func (app *App) SetRoutes() {
 	r := app.Router
 	// r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
-	// r.HandleFunc("/comments", GetComments).Methods("GET")
+	r.Handle("/comments", app.handle(GetComments)).Methods("GET")
 	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
 	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
 	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
