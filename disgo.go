@@ -7,6 +7,7 @@ import (
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/martini-contrib/cors"
 	"github.com/martini-contrib/method"
@@ -22,7 +23,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -32,7 +32,14 @@ var (
 	cfgPath    string
 	importPath string
 	help       bool
+	app        *handler.App
 )
+
+type App struct {
+	Router *mux.Router
+	Db     *sql.DB
+	Config models.Config
+}
 
 func init() {
 	flag.StringVar(&cfgPath, "config", "disgo.gcfg", "path to the config file")
@@ -42,8 +49,6 @@ func init() {
 	var err error
 	cfg, err = models.LoadConfig(cfgPath)
 	checkErr(err, "Unable to load config file:")
-
-	setupMartini()
 }
 
 func main() {
@@ -55,12 +60,12 @@ func main() {
 		return
 	}
 
-	app := handler.NewApp()
+	app = handler.NewApp()
 	app.SetRoutes()
 	app.LoadConfig(cfgPath)
 	app.ConnectDb()
 	http.Handle("/", app.Router)
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
 
 func initDb(cfg models.Config) *gorp.DbMap {
@@ -161,15 +166,6 @@ func viewhelper() []template.FuncMap {
 			},
 		},
 	}
-}
-
-func getIndex(ren render.Render, req *http.Request, cfg models.Config) {
-	scheme := "http"
-	if req.TLS != nil {
-		scheme = "https"
-	}
-	base := []string{scheme, "://", req.Host, cfg.General.Prefix}
-	ren.HTML(200, "index", strings.Join(base, ""))
 }
 
 func setupMartini() {

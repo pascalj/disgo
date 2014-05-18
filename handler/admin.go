@@ -2,6 +2,7 @@ package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
+	"fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
@@ -106,6 +107,16 @@ func PostLogin(ren render.Render,
 
 	session.Set("userId", user.Id)
 	ren.Redirect(cfg.General.Prefix + "/admin/")
+}
+
+func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
+	scheme := "http"
+	if req.TLS != nil {
+		scheme = "https"
+	}
+	base := []string{scheme, "://", req.Host, app.Config.General.Prefix}
+	fmt.Println(base)
+	// ren.HTML(200, "index", strings.Join(base, ""))
 }
 
 // PostLogout logs the user out and redirects to the login page.

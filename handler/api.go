@@ -6,7 +6,6 @@ import (
 	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
-	"github.com/pascalj/disgo/service"
 	"net/http"
 	"strings"
 	"time"
@@ -66,24 +65,19 @@ func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 
 // CreateComment validates and creates a new comment. It also saves the client's IP-adress
 // to reduce spam.
-func CreateComment(ren render.Render,
-	view models.View,
-	comment models.Comment,
-	req *http.Request,
-	dbmap *gorp.DbMap,
-	session sessions.Session,
-	notifier *service.Notifier) {
+func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
+	comment := models.NewComment("email", "name", "title", "body", "url", "ip", "id")
 	comment.Created = time.Now().Unix()
 	comment.ClientIp = strings.Split(req.RemoteAddr, ":")[0]
-	err := dbmap.Insert(&comment)
-	if err != nil {
-		ren.JSON(400, err.Error())
-	} else {
-		session.Set("email", comment.Email)
-		session.Set("name", comment.Name)
-		go notifier.CommentCreated(&comment)
-		view.RenderComment(comment, nil, ren)
-	}
+	// err := dbmap.Insert(&comment)
+	// if err != nil {
+	// 	ren.JSON(400, err.Error())
+	// } else {
+	// 	session.Set("email", comment.Email)
+	// 	session.Set("name", comment.Name)
+	// 	go notifier.CommentCreated(&comment)
+	// 	view.RenderComment(comment, nil, ren)
+	// }
 }
 
 // DestroyComment deletes a comment from the database by id.

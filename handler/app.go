@@ -2,9 +2,11 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/pascalj/disgo/models"
+	"net/http"
 )
 
 type App struct {
@@ -36,10 +38,6 @@ const (
 		) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;`
 )
 
-var (
-	CurrentApp *App
-)
-
 func NewApp() *App {
 	router := mux.NewRouter()
 	return &App{Router: router}
@@ -56,11 +54,11 @@ func (app *App) LoadConfig(path string) error {
 
 func (app *App) SetRoutes() {
 	r := app.Router
-	r.HandleFunc("/comments", CreateComment).Methods("POST")
-	r.HandleFunc("/comments", GetComments).Methods("GET")
-	r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
-	r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
-	r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
+	// r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
+	// r.HandleFunc("/comments", GetComments).Methods("GET")
+	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
+	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
+	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
 
 	// r.HandleFunc("/admin", AdminIndex).Methods("GET")
 	// r.HandleFunc("/admin/unapproved", UnapprovedComments).Methods("GET")
@@ -69,7 +67,7 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
-	// r.HandleFunc("/", getIndex).Methods("GET")
+	r.Handle("/", app.handle(GetIndex)).Methods("GET")
 }
 
 func (app *App) ConnectDb() error {
@@ -83,4 +81,18 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	return nil
+}
+
+func (app *App) handle(handler disgoHandler) *appHandler {
+	return &appHandler{handler, app}
+}
+
+type disgoHandler func(http.ResponseWriter, *http.Request, *App)
+type appHandler struct {
+	handler disgoHandler
+	app     *App
+}
+
+func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.handler(w, r, h.app)
 }
