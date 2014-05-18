@@ -6,7 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/pascalj/disgo/models"
+	"github.com/russross/blackfriday"
+	"github.com/ungerik/go-gravatar"
+	"html/template"
 	"net/http"
+	"time"
 )
 
 type App struct {
@@ -14,6 +18,7 @@ type App struct {
 	Db           *sql.DB
 	Config       models.Config
 	SessionStore sessions.Store
+	Templates    *template.Template
 }
 
 const (
@@ -55,6 +60,22 @@ func (app *App) LoadConfig(path string) error {
 
 func (app *App) InitSession() {
 	app.SessionStore = sessions.NewCookieStore([]byte(app.Config.General.Secret))
+}
+
+func (app *App) ParseTemplates() error {
+	var err error
+	templates := template.New("")
+	templates.Funcs(app.viewhelpers())
+	templates, err = templates.ParseGlob("templates" + "/*.tmpl")
+	if err != nil {
+		return err
+	}
+	templates, err = templates.ParseGlob("templates" + "/admin/*.tmpl")
+	if err != nil {
+		return err
+	}
+	app.Templates = templates
+	return nil
 }
 
 func (app *App) SetRoutes() {
@@ -100,4 +121,40 @@ type appHandler struct {
 
 func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.handler(w, r, h.app)
+}
+
+func (app *App) viewhelpers() template.FuncMap {
+	return template.FuncMap{
+		"formatTime": func(args ...interface{}) string {
+			t1 := time.Unix(args[0].(int64), 0)
+			return t1.Format(time.Stamp)
+		},
+		"gravatar": func(args ...interface{}) string {
+			return gravatar.Url(args[0].(string))
+		},
+		"awaitingApproval": func(args ...models.Comment) bool {
+			return !args[0].Approved && app.Config.General.Approval
+
+		},
+		"usesMarkdown": func() bool {
+			return app.Config.General.Markdown
+		},
+		"markdown": func(args ...string) template.HTML {
+			output := blackfriday.MarkdownCommon([]byte(args[0]))
+			return template.HTML(output)
+		},
+		"times": func(args ...int) []struct{} {
+			return make([]struct{}, args[0])
+		},
+		"add": func(args ...int) int {
+			return args[0] + args[1]
+		},
+		"base": func() string {
+			if app.Config.General.Prefix != "" {
+				return app.Config.General.Prefix
+			} else {
+				return "/"
+			}
+		},
+	}
 }

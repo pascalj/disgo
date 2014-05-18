@@ -10,9 +10,6 @@ import (
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
-	"github.com/russross/blackfriday"
-	"github.com/ungerik/go-gravatar"
-	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -46,12 +43,12 @@ func main() {
 	// 	reader := bufio.NewReader(file)
 	// 	return
 	// }
-
 	app = handler.NewApp()
 	app.SetRoutes()
 	app.LoadConfig(cfgPath)
 	app.ConnectDb()
 	app.InitSession()
+	checkErr(app.ParseTemplates(), "")
 	http.Handle("/", app.Router)
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
@@ -97,43 +94,6 @@ func relevantIpBytes(remoteAddr string) (string, error) {
 			parsedIp[i] = 0
 		}
 		return parsedIp.String(), nil
-	}
-}
-
-func viewhelper() []template.FuncMap {
-	return []template.FuncMap{
-		{
-			"formatTime": func(args ...interface{}) string {
-				t1 := time.Unix(args[0].(int64), 0)
-				return t1.Format(time.Stamp)
-			},
-			"gravatar": func(args ...interface{}) string {
-				return gravatar.Url(args[0].(string))
-			},
-			"awaitingApproval": func(args ...models.Comment) bool {
-				return !args[0].Approved && cfg.General.Approval
-			},
-			"usesMarkdown": func() bool {
-				return cfg.General.Markdown
-			},
-			"markdown": func(args ...string) template.HTML {
-				output := blackfriday.MarkdownCommon([]byte(args[0]))
-				return template.HTML(output)
-			},
-			"times": func(args ...int) []struct{} {
-				return make([]struct{}, args[0])
-			},
-			"add": func(args ...int) int {
-				return args[0] + args[1]
-			},
-			"base": func() string {
-				if cfg.General.Prefix != "" {
-					return cfg.General.Prefix
-				} else {
-					return "/"
-				}
-			},
-		},
 	}
 }
 

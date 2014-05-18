@@ -35,13 +35,14 @@ func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 	}
 
 	ctx := map[string]interface{}{
-		"email": email,
-		"name":  name,
+		"email":    email,
+		"name":     name,
+		"comments": comments,
 	}
 	_ = ctx
 
 	if len(comments) > 0 {
-		w.Write([]byte("success"))
+		renderComments(w, "comments", ctx, app)
 	}
 }
 
@@ -91,19 +92,16 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 	}
 }
 
-// MapView maps the View type for martini depending on the accept header. It is used
-// to generate the appropriate output for html and json.
-func MapView(ctx martini.Context, res http.ResponseWriter, req *http.Request) {
-	accept := req.Header["Accept"]
-	if accept[0] != "" {
-		accept = strings.Split(accept[0], ",")
+func renderComment(w http.ResponseWriter, tmpl string, comment models.Comment, app *App) {
+	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", comment)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	switch accept[0] {
-	case "text/html":
-		ctx.MapTo(models.HtmlView{}, (*models.View)(nil))
-		res.Header().Set("Content-Type", "text/html")
-	default:
-		ctx.MapTo(models.JsonView{}, (*models.View)(nil))
-		res.Header().Set("Content-Type", "application/json")
+}
+
+func renderComments(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
+	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", ctx)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
