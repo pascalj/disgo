@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 	"github.com/pascalj/disgo/models"
+	"net"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -62,9 +63,28 @@ func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 // CreateComment validates and creates a new comment. It also saves the client's IP-adress
 // to reduce spam.
 func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
-	comment := models.NewComment("email", "name", "title", "body", "url", "ip", "id")
+	comment := models.NewComment(
+		req.FormValue("email"),
+		req.FormValue("name"),
+		req.FormValue("title"),
+		req.FormValue("body"),
+		req.FormValue("url"),
+		req.RemoteAddr)
 	comment.Created = time.Now().Unix()
-	comment.ClientIp = strings.Split(req.RemoteAddr, ":")[0]
+
+	ip, err := RelevantIpBytes(req.RemoteAddr)
+	if err != nil {
+		ip = req.RemoteAddr
+	}
+	comment.ClientIp = ip
+
+	valid, _ := comment.Validate()
+	if valid {
+		err := comment.Save(app.Db)
+		if err != nil {
+			w.WriteHeader(500)
+		}
+	}
 	// err := dbmap.Insert(&comment)
 	// if err != nil {
 	// 	ren.JSON(400, err.Error())
@@ -103,5 +123,32 @@ func renderComments(w http.ResponseWriter, tmpl string, ctx map[string]interface
 	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", ctx)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Get relevant bytes from the IP address. This is used to rate limit v6 addresses as
+// the last 64 will get shuffled.
+func RelevantIpBytes(remoteAddr string) (string, error) {
+	ip, _, err := net.SplitHostPort(remoteAddr)
+	if err != nil {
+		return "", err
+	}
+
+	parsedIp := net.ParseIP(ip)
+
+	if parsedIp.To4() != nil {
+		return ip, nil
+	} else {
+		// we got a v6 address, just grab the first 8 bytes
+		for i := 8; i < len(parsedIp); i++ {
+			parsedIp[i] = 0
+		}
+		return parsedIp.String(), nil
+	}
+}
+
+func checkErr(err error, msg string) {
+	if err != nil {
+		fmt.Println(msg, err)
 	}
 }

@@ -11,7 +11,6 @@ import (
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"time"
@@ -61,7 +60,7 @@ func rateLimit(ren render.Render,
 	dbmap *gorp.DbMap) {
 	if cfg.Rate_Limit.Enable {
 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
-		ip, err := relevantIpBytes(req.RemoteAddr)
+		ip, err := handler.RelevantIpBytes(req.RemoteAddr)
 		errors := map[string]string{"overall": "Rate limit reached."}
 		if err != nil {
 			ren.JSON(429, errors)
@@ -76,29 +75,8 @@ func rateLimit(ren render.Render,
 	}
 }
 
-// Get relevant bytes from the IP address. This is used to rate limit v6 addresses as
-// the last 64 will get shuffled.
-func relevantIpBytes(remoteAddr string) (string, error) {
-	ip, _, err := net.SplitHostPort(remoteAddr)
+func checkErr(err error, description string) {
 	if err != nil {
-		return "", err
-	}
-
-	parsedIp := net.ParseIP(ip)
-
-	if parsedIp.To4() != nil {
-		return ip, nil
-	} else {
-		// we got a v6 address, just grab the first 8 bytes
-		for i := 8; i < len(parsedIp); i++ {
-			parsedIp[i] = 0
-		}
-		return parsedIp.String(), nil
-	}
-}
-
-func checkErr(err error, msg string) {
-	if err != nil {
-		log.Fatalln(msg, err)
+		log.Fatalln(description, err)
 	}
 }

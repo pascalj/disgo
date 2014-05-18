@@ -80,7 +80,7 @@ func (app *App) ParseTemplates() error {
 
 func (app *App) SetRoutes() {
 	r := app.Router
-	// r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
+	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
 	r.Handle("/comments", app.handle(GetComments)).Methods("GET")
 	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
 	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
