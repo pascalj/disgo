@@ -57,6 +57,8 @@ func main() {
 
 	app := handler.NewApp()
 	app.SetRoutes()
+	app.LoadConfig(cfgPath)
+	app.ConnectDb()
 	http.Handle("/", app.Router)
 	http.ListenAndServe(":3000", nil)
 }
