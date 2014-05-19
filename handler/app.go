@@ -2,15 +2,14 @@ package handler
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	_ "github.com/lib/pq"
 	"github.com/pascalj/disgo/models"
-	"github.com/russross/blackfriday"
-	"github.com/ungerik/go-gravatar"
 	"html/template"
 	"net/http"
-	"time"
 )
 
 type App struct {
@@ -21,32 +20,27 @@ type App struct {
 	Templates    *template.Template
 }
 
-const (
-	sqlCreate = `
-		CREATE TABLE IF NOT EXISTS comments (
-		  Id bigint(20) NOT NULL AUTO_INCREMENT,
-		  Created bigint(20) DEFAULT NULL,
-		  Email varchar(255) DEFAULT NULL,
-		  Name varchar(255) DEFAULT NULL,
-		  Body varchar(255) DEFAULT NULL,
-		  Url varchar(255) DEFAULT NULL,
-		  ClientIp varchar(255) DEFAULT NULL,
-		  Approved tinyint(1) DEFAULT NULL,
-		  PRIMARY KEY (Id)
-		) ENGINE=InnoDB AUTO_INCREMENT=368 DEFAULT CHARSET=utf8;
-
-		CREATE TABLE IF NOT EXISTS users (
-		  Id bigint(20) NOT NULL AUTO_INCREMENT,
-		  Created bigint(20) DEFAULT NULL,
-		  Email varchar(255) DEFAULT NULL,
-		  Password varchar(255) DEFAULT NULL,
-		  PRIMARY KEY (Id)
-		) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;`
-)
-
-func NewApp() *App {
+func NewApp(cfgPath string) (*App, error) {
 	router := mux.NewRouter()
-	return &App{Router: router}
+	app := &App{Router: router}
+	err := app.Setup(cfgPath)
+	return app, err
+}
+
+// Setup the app. Loads the config, parses templates, connects to DB.
+func (app *App) Setup(cfgPath string) error {
+	if err := app.LoadConfig(cfgPath); err != nil {
+		return err
+	}
+	if err := app.ConnectDb(); err != nil {
+		return err
+	}
+	if err := app.ParseTemplates(); err != nil {
+		return err
+	}
+	app.SetRoutes()
+	app.InitSession()
+	return nil
 }
 
 func (app *App) LoadConfig(path string) error {
@@ -93,11 +87,17 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 	r.Handle("/", app.handle(GetIndex)).Methods("GET")
 }
 
 func (app *App) ConnectDb() error {
+	fmt.Println(app.Config.Database.Driver, app.Config.Database.Access)
 	db, err := sql.Open(app.Config.Database.Driver, app.Config.Database.Access)
+	if err != nil {
+		return err
+	}
+	err = db.Ping()
 	if err != nil {
 		return err
 	}
@@ -107,54 +107,4 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	return nil
-}
-
-func (app *App) handle(handler disgoHandler) *appHandler {
-	return &appHandler{handler, app}
-}
-
-type disgoHandler func(http.ResponseWriter, *http.Request, *App)
-type appHandler struct {
-	handler disgoHandler
-	app     *App
-}
-
-func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.handler(w, r, h.app)
-}
-
-func (app *App) viewhelpers() template.FuncMap {
-	return template.FuncMap{
-		"formatTime": func(args ...interface{}) string {
-			t1 := time.Unix(args[0].(int64), 0)
-			return t1.Format(time.Stamp)
-		},
-		"gravatar": func(args ...interface{}) string {
-			return gravatar.Url(args[0].(string))
-		},
-		"awaitingApproval": func(args ...models.Comment) bool {
-			return !args[0].Approved && app.Config.General.Approval
-
-		},
-		"usesMarkdown": func() bool {
-			return app.Config.General.Markdown
-		},
-		"markdown": func(args ...string) template.HTML {
-			output := blackfriday.MarkdownCommon([]byte(args[0]))
-			return template.HTML(output)
-		},
-		"times": func(args ...int) []struct{} {
-			return make([]struct{}, args[0])
-		},
-		"add": func(args ...int) int {
-			return args[0] + args[1]
-		},
-		"base": func() string {
-			if app.Config.General.Prefix != "" {
-				return app.Config.General.Prefix
-			} else {
-				return "/"
-			}
-		},
-	}
 }

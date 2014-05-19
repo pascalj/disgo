@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 	"github.com/pascalj/disgo/models"
-	"net"
 	"net/http"
 	"time"
 )
@@ -72,18 +70,22 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 		req.RemoteAddr)
 	comment.Created = time.Now().Unix()
 
-	ip, err := RelevantIpBytes(req.RemoteAddr)
+	ip, err := relevantIpBytes(req.RemoteAddr)
 	if err != nil {
 		ip = req.RemoteAddr
 	}
 	comment.ClientIp = ip
 
-	valid, _ := comment.Validate()
+	valid, valErrors := comment.Validate()
 	if valid {
 		err := comment.Save(app.Db)
 		if err != nil {
 			w.WriteHeader(500)
+		} else {
+			app.Templates.ExecuteTemplate(w, "comment", comment)
 		}
+	} else {
+		renderErrors(w, valErrors, 422)
 	}
 	// err := dbmap.Insert(&comment)
 	// if err != nil {
@@ -109,46 +111,5 @@ func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap)
 		} else {
 			ren.Redirect("/admin")
 		}
-	}
-}
-
-func renderComment(w http.ResponseWriter, tmpl string, comment models.Comment, app *App) {
-	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", comment)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func renderComments(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
-	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", ctx)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Get relevant bytes from the IP address. This is used to rate limit v6 addresses as
-// the last 64 will get shuffled.
-func RelevantIpBytes(remoteAddr string) (string, error) {
-	ip, _, err := net.SplitHostPort(remoteAddr)
-	if err != nil {
-		return "", err
-	}
-
-	parsedIp := net.ParseIP(ip)
-
-	if parsedIp.To4() != nil {
-		return ip, nil
-	} else {
-		// we got a v6 address, just grab the first 8 bytes
-		for i := 8; i < len(parsedIp); i++ {
-			parsedIp[i] = 0
-		}
-		return parsedIp.String(), nil
-	}
-}
-
-func checkErr(err error, msg string) {
-	if err != nil {
-		fmt.Println(msg, err)
 	}
 }
