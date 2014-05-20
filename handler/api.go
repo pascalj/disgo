@@ -82,20 +82,17 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 		if err != nil {
 			w.WriteHeader(500)
 		} else {
-			app.Templates.ExecuteTemplate(w, "comment", comment)
+			renderComment(w, "comment", comment, app)
 		}
 	} else {
 		renderErrors(w, valErrors, 422)
 	}
-	// err := dbmap.Insert(&comment)
-	// if err != nil {
-	// 	ren.JSON(400, err.Error())
-	// } else {
-	// 	session.Set("email", comment.Email)
-	// 	session.Set("name", comment.Name)
-	// 	go notifier.CommentCreated(&comment)
-	// 	view.RenderComment(comment, nil, ren)
-	// }
+
+	session, _ := app.SessionStore.Get(req, SessionName)
+	session.Values["email"] = comment.Email
+	session.Values["name"] = comment.Name
+
+	go app.Notifier.CommentCreated(&comment)
 }
 
 // DestroyComment deletes a comment from the database by id.

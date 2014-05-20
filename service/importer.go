@@ -62,7 +62,7 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 			createdAt = time.Now()
 		}
 		body := sanitize.HTML(post.Message)
-		comment := models.NewComment(post.Author.Email, post.Author.Name, "", body, thread.Link, post.IpAddress, "")
+		comment := models.NewComment(post.Author.Email, post.Author.Name, "", body, thread.Link, post.IpAddress)
 		comment.Created = createdAt.Unix()
 		comment.Approved = post.IsSpam == "false"
 		comments = append(comments, comment)

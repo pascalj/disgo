@@ -38,6 +38,7 @@ const (
       Password varchar(255) DEFAULT NULL,
       PRIMARY KEY (Id)
     ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;`
+	SessionName = "disgo"
 )
 
 // Viewhelpers for rendering.
