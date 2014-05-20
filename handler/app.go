@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -75,7 +74,7 @@ func (app *App) ParseTemplates() error {
 func (app *App) SetRoutes() {
 	r := app.Router
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
-	r.Handle("/comments", app.handle(GetComments)).Methods("GET")
+	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
 	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
 	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
 	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
@@ -88,11 +87,10 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
-	r.Handle("/", app.handle(GetIndex)).Methods("GET")
+	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
 }
 
 func (app *App) ConnectDb() error {
-	fmt.Println(app.Config.Database.Driver, app.Config.Database.Access)
 	db, err := sql.Open(app.Config.Database.Driver, app.Config.Database.Access)
 	if err != nil {
 		return err

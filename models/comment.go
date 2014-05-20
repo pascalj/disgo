@@ -66,19 +66,22 @@ func (c *Comment) Validate() (bool, map[string]string) {
 	if c.Body == "" {
 		errors["body"] = "A message is required."
 	}
+	if c.Url == "" {
+		errors["url"] = "A URL is required. Something went wrong."
+	}
 	return (len(errors) == 0), errors
 }
 
 func (c *Comment) Save(db *sql.DB) error {
 	stmt, err := db.Prepare(`
 		INSERT INTO
-		comments(Email, Name, Body, Created, Url, Approved)
-		VALUES(?, ?, ?, ?, ?, ?)")`)
+		comments(Email, Name, Body, Created, Url, ClientIp, Approved)
+		VALUES(?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.Approved)
+	res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
 	if err != nil {
 		return err
 	}
