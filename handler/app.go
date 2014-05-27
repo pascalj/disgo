@@ -78,11 +78,10 @@ func (app *App) SetRoutes() {
 	r := app.Router
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
 	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
-	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
-	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
+	//r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
 	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
 
-	// r.HandleFunc("/admin", AdminIndex).Methods("GET")
+	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
 	// r.HandleFunc("/admin/unapproved", UnapprovedComments).Methods("GET")
 	// r.HandleFunc("/login", GetLogin).Methods("GET")
 	// r.HandleFunc("/login", PostLogin).Methods("POST")
@@ -103,9 +102,9 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	app.Db = db
-	_, err = db.Exec(sqlCreate)
-	if err != nil {
-		return err
-	}
+	// _, err = db.Exec(sqlCreate)
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }

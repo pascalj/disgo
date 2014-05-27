@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/coopernurse/gorp"
@@ -172,4 +173,9 @@ func renderErrors(w http.ResponseWriter, errors map[string]string, code int) {
 	if err := encoder.Encode(&errors); err != nil {
 		http.Error(w, fmt.Sprintf("Cannot encode response data"), 500)
 	}
+}
+
+func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
+	comments, pages := models.AllCommentsPaginated(db, page)
+	return &models.PaginatedComments{pages, page, 10, comments}
 }

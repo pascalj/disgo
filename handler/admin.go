@@ -13,17 +13,19 @@ import (
 )
 
 // AdminIndex shows the overview of the admin interface with latest comments.
-func AdminIndex(req *http.Request, ren render.Render, dbmap *gorp.DbMap) {
+func AdminIndex(w http.ResponseWriter, req *http.Request, app *App) {
 	qry := req.URL.Query()
 	page, err := strconv.Atoi(qry.Get("page"))
 
 	if err != nil {
 		page = 0
 	}
-	comments := paginatedComments(dbmap, page)
-	ren.HTML(200, "admin/index", comments, render.HTMLOptions{
-		Layout: "admin/layout",
-	})
+	comments := paginatedComments(app.Db, page)
+
+	err = app.Templates.ExecuteTemplate(w, "admin_index.tmpl", comments)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 // UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
@@ -123,14 +125,4 @@ func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 func PostLogout(ren render.Render, session sessions.Session, cfg models.Config) {
 	session.Clear()
 	ren.Redirect(cfg.General.Prefix + "/login")
-}
-
-func paginatedComments(dbmap *gorp.DbMap, page int) *models.PaginatedComments {
-	var comments []models.Comment
-	pages, err := dbmap.SelectInt("select ceil(count(*)/10) from comments")
-	if err != nil {
-		pages = 1
-	}
-	dbmap.Select(&comments, "select * from comments order by created desc limit 10 offset ?", page*10)
-	return &models.PaginatedComments{int(pages), page, 10, comments}
 }
