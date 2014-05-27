@@ -76,9 +76,10 @@ func (app *App) ParseTemplates() error {
 
 func (app *App) SetRoutes() {
 	r := app.Router
+	r.StrictSlash(true)
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
 	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
-	//r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
+	r.Handle("/comments/approve/{id}", app.handle(ApproveComment)).Methods("POST")
 	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
 
 	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
@@ -88,8 +89,8 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }
 
 func (app *App) ConnectDb() error {
