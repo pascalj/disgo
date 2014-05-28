@@ -4,7 +4,6 @@ import (
 	"code.google.com/p/go.crypto/bcrypt"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
 	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
@@ -41,10 +40,8 @@ func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // GetRegister shows the register form.
-func GetRegister(ren render.Render) {
-	ren.HTML(200, "admin/register", nil, render.HTMLOptions{
-		Layout: "admin/layout",
-	})
+func GetRegister(w http.ResponseWriter, req *http.Request, app *App) {
+	app.Templates.ExecuteTemplate(w, "register.tmpl", nil)
 }
 
 // PostUser will create a new user when no other users are in the database.
