@@ -95,6 +95,7 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 	session, _ := app.SessionStore.Get(req, SessionName)
 	session.Values["email"] = comment.Email
 	session.Values["name"] = comment.Name
+	session.Save(req, w)
 
 	go app.Notifier.CommentCreated(&comment)
 }
