@@ -36,6 +36,18 @@ func (u *User) Save(db *sql.DB) error {
 	return nil
 }
 
+func UserByEmail(db *sql.DB, email string) (User, error) {
+	row := db.QueryRow("SELECT * FROM User WHERE Email = ?", email)
+	user := User{}
+	err := row.Scan(&user.Id, &user.Email, &user.Password)
+
+	if err != nil {
+		logErr(err, "Could not load user")
+		return User{}, err
+	}
+	return user, nil
+}
+
 // NewUser creates a new user while automatically hashing the password.
 func NewUser(email, password string) User {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

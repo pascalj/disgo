@@ -88,22 +88,20 @@ func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // PostLogin takes the email and password parameter and logs the user in if they are correct.
-func PostLogin(ren render.Render,
-	req *http.Request,
-	session sessions.Session,
-	dbmap *gorp.DbMap,
-	cfg models.Config) {
+func PostLogin(w http.ResponseWriter, req *http.Request, app *App) {
 	var user models.User
 
 	email, password := req.FormValue("email"), req.FormValue("password")
-	err := dbmap.SelectOne(&user, "select * from users where email = :email", map[string]interface{}{"email": email})
+	user, err := models.UserByEmail(app.Db, email)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		ren.Redirect(cfg.General.Prefix + "/login")
+		http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
 		return
 	}
 
-	session.Set("userId", user.Id)
-	ren.Redirect(cfg.General.Prefix + "/admin/")
+	session, _ := app.SessionStore.Get(req, SessionName)
+	session.Values["userId"] = user.Id
+
+	http.Redirect(w, req, app.Config.General.Prefix+"/admin/", http.StatusTemporaryRedirect)
 }
 
 func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
