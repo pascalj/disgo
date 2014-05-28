@@ -2,7 +2,6 @@ package handler
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -87,12 +86,11 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 	r.Handle("/", app.handle(GetIndex)).Methods("GET")
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }
 
 func (app *App) ConnectDb() error {
-	fmt.Println(app.Config.Database.Driver, app.Config.Database.Access)
 	db, err := sql.Open(app.Config.Database.Driver, app.Config.Database.Access)
 	if err != nil {
 		return err
@@ -102,9 +100,11 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	app.Db = db
-	_, err = db.Exec(sqlCreate)
-	if err != nil {
-		return err
+	for _, statement := range sqlCreate {
+		_, err = db.Exec(statement)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

@@ -15,10 +15,10 @@ import (
 	"time"
 )
 
-const (
+var (
 	// Create table instuctions.
 	// BUG(pascalj): Use migrations instead.
-	sqlCreate = `
+	sqlCreate = []string{`
     CREATE TABLE IF NOT EXISTS comments (
       Id bigint(20) NOT NULL AUTO_INCREMENT,
       Created bigint(20) DEFAULT NULL,
@@ -29,15 +29,15 @@ const (
       ClientIp varchar(255) DEFAULT NULL,
       Approved tinyint(1) DEFAULT NULL,
       PRIMARY KEY (Id)
-    ) ENGINE=InnoDB AUTO_INCREMENT=368 DEFAULT CHARSET=utf8;
+    ) ENGINE=InnoDB AUTO_INCREMENT=368 DEFAULT CHARSET=utf8`,
 
-    CREATE TABLE IF NOT EXISTS users (
+		`CREATE TABLE IF NOT EXISTS users (
       Id bigint(20) NOT NULL AUTO_INCREMENT,
       Created bigint(20) DEFAULT NULL,
       Email varchar(255) DEFAULT NULL,
       Password varchar(255) DEFAULT NULL,
       PRIMARY KEY (Id)
-    ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;`
+    ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;`}
 )
 
 // Viewhelpers for rendering.
