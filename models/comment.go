@@ -94,6 +94,16 @@ func (c *Comment) Save(db *sql.DB) error {
 	return nil
 }
 
+func GetComment(db *sql.DB, id int) *Comment {
+	row := db.QueryRow("SELECT * FROM Comments WHERE Id = ?", id)
+	comment, err := scanComment(row)
+	if err != nil {
+		return nil
+	} else {
+		return comment
+	}
+}
+
 func ApprovedComments(db *sql.DB, url string, email string) []Comment {
 	comments := make([]Comment, 0)
 	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
@@ -170,7 +180,7 @@ func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		comment, err := scanComment(rows)
+		comment, err := scanComments(rows)
 		if err != nil {
 			logErr(err, "Error mapping comment:")
 		}
@@ -193,7 +203,21 @@ func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
 	return comments, pages
 }
 
-func scanComment(rows *sql.Rows) (Comment, error) {
+func scanComment(row *sql.Row) (*Comment, error) {
+	comment := Comment{}
+	err := row.Scan(
+		&comment.Id,
+		&comment.Created,
+		&comment.Email,
+		&comment.Name,
+		&comment.Body,
+		&comment.Url,
+		&comment.ClientIp,
+		&comment.Approved)
+	return &comment, err
+}
+
+func scanComments(rows *sql.Rows) (Comment, error) {
 	comment := Comment{}
 	err := rows.Scan(
 		&comment.Id,

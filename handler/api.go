@@ -3,9 +3,11 @@ package handler
 import (
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
+	"github.com/gorilla/mux"
 	"github.com/martini-contrib/render"
 	"github.com/pascalj/disgo/models"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -46,15 +48,20 @@ func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // ApproveComment allows admins to approve a comment by id.
-func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.Error(404)
+func ApproveComment(w http.ResponseWriter, req *http.Request, app *App) {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(422)
+		return
+	}
+	comment := models.GetComment(app.Db, id)
+	if comment == nil {
+		w.WriteHeader(404)
 	} else {
-		comment := obj.(*models.Comment)
 		comment.Approved = true
-		dbmap.Update(comment)
-		ren.Redirect("/admin")
+		comment.Save(app.Db)
+		http.Redirect(w, req, "/admin", 303)
 	}
 }
 
