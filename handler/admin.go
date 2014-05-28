@@ -49,16 +49,16 @@ func GetRegister(ren render.Render) {
 
 // PostUser will create a new user when no other users are in the database.
 // If users are present, it will redirect to the login.
-func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap, cfg models.Config) {
-	if models.UserCount(dbmap) == 0 {
+func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
+	if models.UserCount(app.Db) == 0 {
 		email, password := req.FormValue("email"), req.FormValue("password")
-		user := models.NewUser(email, password)
-		err := dbmap.Insert(&user)
-		if err != nil {
-			ren.Redirect(cfg.General.Prefix + "/register")
-		} else {
-			ren.Redirect(cfg.General.Prefix + "/login")
-		}
+		_ = models.NewUser(email, password)
+		// err := dbmap.Insert(&user)
+		// if err != nil {
+		// 	ren.Redirect(cfg.General.Prefix + "/register")
+		// } else {
+		// 	ren.Redirect(cfg.General.Prefix + "/login")
+		// }
 	}
 }
 
@@ -78,13 +78,11 @@ func RequireLogin(rw http.ResponseWriter, req *http.Request,
 }
 
 // GetLogin shows the login form for the backend.
-func GetLogin(ren render.Render, dbmap *gorp.DbMap, cfg models.Config) {
-	if models.UserCount(dbmap) > 0 {
-		ren.HTML(200, "admin/login", nil, render.HTMLOptions{
-			Layout: "layout",
-		})
+func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
+	if models.UserCount(app.Db) > 0 {
+		app.Templates.ExecuteTemplate(w, "login.tmpl", nil)
 	} else {
-		ren.Redirect(cfg.General.Prefix + "/register")
+		http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusTemporaryRedirect)
 	}
 
 }

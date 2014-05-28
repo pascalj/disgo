@@ -2,7 +2,7 @@ package models
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/coopernurse/gorp"
+	"database/sql"
 	"time"
 )
 
@@ -25,8 +25,11 @@ func NewUser(email, password string) User {
 }
 
 // UserCount gets the number of users already in the database.
-func UserCount(dbmap *gorp.DbMap) int {
-	var ids []string
-	dbmap.Select(&ids, "select id from users")
-	return len(ids)
+func UserCount(db *sql.DB) int {
+	var count int
+	err := db.QueryRow("SELECT COUNT(*) FROM Users").Scan(&count)
+	if err != nil {
+		return 0
+	}
+	return count
 }
