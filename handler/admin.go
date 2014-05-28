@@ -52,13 +52,13 @@ func GetRegister(ren render.Render) {
 func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
 	if models.UserCount(app.Db) == 0 {
 		email, password := req.FormValue("email"), req.FormValue("password")
-		_ = models.NewUser(email, password)
-		// err := dbmap.Insert(&user)
-		// if err != nil {
-		// 	ren.Redirect(cfg.General.Prefix + "/register")
-		// } else {
-		// 	ren.Redirect(cfg.General.Prefix + "/login")
-		// }
+		user := models.NewUser(email, password)
+		err := user.Save(app.Db)
+		if err != nil {
+			http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusTemporaryRedirect)
+		} else {
+			http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
+		}
 	}
 }
 

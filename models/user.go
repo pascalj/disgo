@@ -14,6 +14,28 @@ type User struct {
 	Password string `binding:"required" form:"password"`
 }
 
+func (u *User) Save(db *sql.DB) error {
+	stmt, err := db.Prepare(`
+		INSERT INTO
+		Users(Created, Email, Password)
+		VALUES(?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+
+	res, err := stmt.Exec(u.Created, u.Email, u.Password)
+	if err != nil {
+		return err
+	}
+
+	lastId, err := res.LastInsertId()
+	if err != nil {
+		return err
+	}
+	u.Id = lastId
+	return nil
+}
+
 // NewUser creates a new user while automatically hashing the password.
 func NewUser(email, password string) User {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)

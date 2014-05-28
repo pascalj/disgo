@@ -88,7 +88,7 @@ func (app *App) SetRoutes() {
 	// r.HandleFunc("/login", PostLogin).Methods("POST")
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
-	// r.HandleFunc("/user", PostUser).Methods("POST")
+	r.Handle("/user", app.handle(PostUser)).Methods("POST")
 	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }
