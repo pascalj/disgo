@@ -2,7 +2,6 @@ package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"fmt"
 	"github.com/coopernurse/gorp"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
@@ -10,6 +9,7 @@ import (
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // AdminIndex shows the overview of the admin interface with latest comments.
@@ -100,6 +100,7 @@ func PostLogin(w http.ResponseWriter, req *http.Request, app *App) {
 
 	session, _ := app.SessionStore.Get(req, SessionName)
 	session.Values["userId"] = user.Id
+	session.Save(req, w)
 
 	http.Redirect(w, req, app.Config.General.Prefix+"/admin/", http.StatusTemporaryRedirect)
 }
@@ -110,12 +111,13 @@ func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 		scheme = "https"
 	}
 	base := []string{scheme, "://", req.Host, app.Config.General.Prefix}
-	fmt.Println(base)
-	// ren.HTML(200, "index", strings.Join(base, ""))
+	app.Templates.ExecuteTemplate(w, "index.tmpl", strings.Join(base, ""))
 }
 
 // PostLogout logs the user out and redirects to the login page.
-func PostLogout(ren render.Render, session sessions.Session, cfg models.Config) {
-	session.Clear()
-	ren.Redirect(cfg.General.Prefix + "/login")
+func PostLogout(w http.ResponseWriter, req *http.Request, app *App) {
+	session, _ := app.SessionStore.Get(req, SessionName)
+	session.Values["userId"] = nil
+	session.Save(req, w)
+	http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
 }

@@ -86,7 +86,7 @@ func (app *App) SetRoutes() {
 	r.Handle("/admin/unapproved", app.handle(UnapprovedComments)).Methods("GET", "HEAD")
 	r.Handle("/login", app.handle(GetLogin)).Methods("GET", "HEAD")
 	r.Handle("/login", app.handle(PostLogin)).Methods("POST")
-	// r.HandleFunc("/logout", PostLogout).Methods("POST")
+	r.Handle("/logout", app.handle(PostLogout)).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	r.Handle("/user", app.handle(PostUser)).Methods("POST")
 	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
