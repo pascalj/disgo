@@ -94,6 +94,19 @@ func (c *Comment) Save(db *sql.DB) error {
 	return nil
 }
 
+func (c *Comment) Delete(db *sql.DB) error {
+	stmt, err := db.Prepare(`
+		DELETE FROM
+		comments
+		WHERE id = ?`)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(c.Id)
+	return err
+}
+
 func GetComment(db *sql.DB, id int) *Comment {
 	row := db.QueryRow("SELECT * FROM Comments WHERE Id = ?", id)
 	comment, err := scanComment(row)
@@ -104,9 +117,9 @@ func GetComment(db *sql.DB, id int) *Comment {
 	}
 }
 
-func ApprovedComments(db *sql.DB, url string, email string) []Comment {
+func UnapprovedComments(db *sql.DB) []Comment {
 	comments := make([]Comment, 0)
-	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
+	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 0)")
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return comments
@@ -133,6 +146,28 @@ func ApprovedComments(db *sql.DB, url string, email string) []Comment {
 		logErr(err, "Could not read comments")
 	}
 	return comments
+}
+
+func ApprovedComments(db *sql.DB, url string, email string) []Comment {
+	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
+	if err != nil {
+		logErr(err, "Could not load comments:")
+		return nil
+	}
+	defer rows.Close()
+	comments, err := scanComments(rows)
+
+	err = rows.Err()
+	if err != nil {
+		logErr(err, "Could not read comments")
+	}
+	return comments
+}
+
+func UnapprovedCommentsCount(db *sql.DB) (int, error) {
+	var count int
+	err := db.QueryRow("SELECT * FROM Comments WHERE Approved<>1").Scan(&count)
+	return count, err
 }
 
 func AllComments(db *sql.DB, url string) []Comment {
@@ -171,21 +206,14 @@ func logErr(err error, description string) {
 }
 
 func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
-
-	comments := make([]Comment, 0)
 	rows, err := db.Query("SELECT * FROM COMMENTS ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
 	if err != nil {
 		logErr(err, "Could not load comments:")
-		return comments, 0
+		return nil, 0
 	}
 	defer rows.Close()
-	for rows.Next() {
-		comment, err := scanComments(rows)
-		if err != nil {
-			logErr(err, "Error mapping comment:")
-		}
-		comments = append(comments, comment)
-	}
+	comments, err := scanComments(rows)
+
 	err = rows.Err()
 	if err != nil {
 		logErr(err, "Could not read comments")
@@ -217,16 +245,25 @@ func scanComment(row *sql.Row) (*Comment, error) {
 	return &comment, err
 }
 
-func scanComments(rows *sql.Rows) (Comment, error) {
-	comment := Comment{}
-	err := rows.Scan(
-		&comment.Id,
-		&comment.Created,
-		&comment.Email,
-		&comment.Name,
-		&comment.Body,
-		&comment.Url,
-		&comment.ClientIp,
-		&comment.Approved)
-	return comment, err
+func scanComments(rows *sql.Rows) ([]Comment, error) {
+	comments := make([]Comment, 0)
+	for rows.Next() {
+		comment := Comment{}
+		err := rows.Scan(
+			&comment.Id,
+			&comment.Created,
+			&comment.Email,
+			&comment.Name,
+			&comment.Body,
+			&comment.Url,
+			&comment.ClientIp,
+			&comment.Approved)
+		if err != nil {
+			return comments, err
+		} else {
+			comments = append(comments, comment)
+		}
+	}
+
+	return comments, nil
 }

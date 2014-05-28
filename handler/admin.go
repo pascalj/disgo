@@ -29,18 +29,15 @@ func AdminIndex(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
-func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap, cfg models.Config) {
-	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
+func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
+	count, err := models.UnapprovedCommentsCount(app.Db)
 	if err == nil && count > 0 {
-		var comments []models.Comment
-		dbmap.Select(&comments, "select * from comments where approved<>1 order by created desc")
-		ren.HTML(200, "admin/unapproved", comments, render.HTMLOptions{
-			Layout: "admin/layout",
-		})
+		comments := models.UnapprovedComments(app.Db)
+		ctx := map[string]interface{}{"comments": comments}
+		renderComments(w, "unapproved", ctx, app)
 	} else {
-		ren.Redirect(cfg.General.Prefix + "/admin")
+		http.Redirect(w, req, app.Config.General.Prefix+"/admin", http.StatusTemporaryRedirect)
 	}
-
 }
 
 // GetRegister shows the register form.

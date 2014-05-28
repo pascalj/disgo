@@ -1,10 +1,7 @@
 package handler
 
 import (
-	"github.com/coopernurse/gorp"
-	"github.com/go-martini/martini"
 	"github.com/gorilla/mux"
-	"github.com/martini-contrib/render"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strconv"
@@ -103,17 +100,22 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // DestroyComment deletes a comment from the database by id.
-func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.JSON(404, nil)
+func DestroyComment(w http.ResponseWriter, req *http.Request, app *App) {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(422)
+		return
+	}
+	comment := models.GetComment(app.Db, id)
+	if comment == nil {
+		w.WriteHeader(404)
 	} else {
-		comment := obj.(*models.Comment)
-		count, err := dbmap.Delete(comment)
-		if count != 1 || err != nil {
-			ren.JSON(500, err.Error())
+		err := comment.Delete(app.Db)
+		if err != nil {
+			w.WriteHeader(500)
 		} else {
-			ren.Redirect("/admin")
+			http.Redirect(w, req, "/admin", 303)
 		}
 	}
 }

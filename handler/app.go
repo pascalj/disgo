@@ -80,10 +80,10 @@ func (app *App) SetRoutes() {
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
 	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
 	r.Handle("/comments/approve/{id}", app.handle(ApproveComment)).Methods("POST")
-	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
+	r.Handle("/comments/{id}", app.handle(DestroyComment)).Methods("DELETE")
 
 	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
-	// r.HandleFunc("/admin/unapproved", UnapprovedComments).Methods("GET")
+	r.Handle("/admin/unapproved", app.handle(UnapprovedComments)).Methods("GET", "HEAD")
 	// r.HandleFunc("/login", GetLogin).Methods("GET")
 	// r.HandleFunc("/login", PostLogin).Methods("POST")
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
