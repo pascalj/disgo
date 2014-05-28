@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
 	"github.com/pascalj/disgo/models"
+	"github.com/pascalj/disgo/service"
 	"html/template"
 	"net/http"
 )
@@ -17,17 +18,18 @@ type App struct {
 	Config       models.Config
 	SessionStore sessions.Store
 	Templates    *template.Template
+	Notifier     *service.Notifier
 }
 
 func NewApp(cfgPath string) (*App, error) {
 	router := mux.NewRouter()
 	app := &App{Router: router}
-	err := app.Setup(cfgPath)
+	err := app.setup(cfgPath)
 	return app, err
 }
 
 // Setup the app. Loads the config, parses templates, connects to DB.
-func (app *App) Setup(cfgPath string) error {
+func (app *App) setup(cfgPath string) error {
 	if err := app.LoadConfig(cfgPath); err != nil {
 		return err
 	}
@@ -39,6 +41,7 @@ func (app *App) Setup(cfgPath string) error {
 	}
 	app.SetRoutes()
 	app.InitSession()
+	app.Notifier = &service.Notifier{app.Config}
 	return nil
 }
 
@@ -74,19 +77,18 @@ func (app *App) ParseTemplates() error {
 func (app *App) SetRoutes() {
 	r := app.Router
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
-	r.Handle("/comments", app.handle(GetComments)).Methods("GET")
-	// r.HandleFunc("/comments/{id}", GetComment).Methods("GET")
-	// r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
+	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
+	//r.HandleFunc("/comments/approve/:id", ApproveComment).Methods("POST")
 	// r.HandleFunc("/comments/{id}", DestroyComment).Methods("DELETE")
 
-	// r.HandleFunc("/admin", AdminIndex).Methods("GET")
+	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
 	// r.HandleFunc("/admin/unapproved", UnapprovedComments).Methods("GET")
 	// r.HandleFunc("/login", GetLogin).Methods("GET")
 	// r.HandleFunc("/login", PostLogin).Methods("POST")
 	// r.HandleFunc("/logout", PostLogout).Methods("POST")
 	// r.HandleFunc("/register", GetRegister).Methods("GET")
 	// r.HandleFunc("/user", PostUser).Methods("POST")
-	r.Handle("/", app.handle(GetIndex)).Methods("GET")
+	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }
 

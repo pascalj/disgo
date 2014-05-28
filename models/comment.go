@@ -66,19 +66,22 @@ func (c *Comment) Validate() (bool, map[string]string) {
 	if c.Body == "" {
 		errors["body"] = "A message is required."
 	}
+	if c.Url == "" {
+		errors["url"] = "A URL is required. Something went wrong."
+	}
 	return (len(errors) == 0), errors
 }
 
 func (c *Comment) Save(db *sql.DB) error {
 	stmt, err := db.Prepare(`
 		INSERT INTO
-		comments(Email, Name, Body, Created, Url, Approved)
-		VALUES(?, ?, ?, ?, ?, ?)")`)
+		comments(Email, Name, Body, Created, Url, ClientIp, Approved)
+		VALUES(?, ?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
 	}
 
-	res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.Approved)
+	res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
 	if err != nil {
 		return err
 	}
@@ -155,4 +158,51 @@ func AllComments(db *sql.DB, url string) []Comment {
 
 func logErr(err error, description string) {
 	fmt.Println(description, err)
+}
+
+func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
+
+	comments := make([]Comment, 0)
+	rows, err := db.Query("SELECT * FROM COMMENTS ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
+	if err != nil {
+		logErr(err, "Could not load comments:")
+		return comments, 0
+	}
+	defer rows.Close()
+	for rows.Next() {
+		comment, err := scanComment(rows)
+		if err != nil {
+			logErr(err, "Error mapping comment:")
+		}
+		comments = append(comments, comment)
+	}
+	err = rows.Err()
+	if err != nil {
+		logErr(err, "Could not read comments")
+	}
+	countRows, err := db.Query("SELECT CEIL(COUNT(*)/10) FROM comments")
+	defer countRows.Close()
+	if err != nil {
+		logErr(err, "Could not find comment pages count:")
+		return comments, 0
+	}
+	pages := 1
+	if countRows.Next() {
+		countRows.Scan(&pages)
+	}
+	return comments, pages
+}
+
+func scanComment(rows *sql.Rows) (Comment, error) {
+	comment := Comment{}
+	err := rows.Scan(
+		&comment.Id,
+		&comment.Created,
+		&comment.Email,
+		&comment.Name,
+		&comment.Body,
+		&comment.Url,
+		&comment.ClientIp,
+		&comment.Approved)
+	return comment, err
 }

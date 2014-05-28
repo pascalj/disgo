@@ -3,7 +3,7 @@
     <h3>Recent comments</h3>
     <div class="comments">
       {{range .Comments}}
-        {{template "admin/comment" .}}
+        {{template "admin_comment.tmpl" .}}
       {{end}}
     </div>
     {{if gt .TotalPages 1}}
