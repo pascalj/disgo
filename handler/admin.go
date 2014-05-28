@@ -2,9 +2,6 @@ package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/coopernurse/gorp"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strconv"
@@ -61,18 +58,18 @@ func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
 
 // RegireLogin is a middleware that ensures that only an admin call the following
 // handler(s).
-func RequireLogin(rw http.ResponseWriter, req *http.Request,
-	s sessions.Session, dbmap *gorp.DbMap, c martini.Context, cfg models.Config) {
-	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
+// func RequireLogin(rw http.ResponseWriter, req *http.Request,
+// 	s sessions.Session, dbmap *gorp.DbMap, c martini.Context, cfg models.Config) {
+// 	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
 
-	if err != nil || obj == nil {
-		http.Redirect(rw, req, cfg.General.Prefix+"/login", http.StatusFound)
-		return
-	}
+// 	if err != nil || obj == nil {
+// 		http.Redirect(rw, req, cfg.General.Prefix+"/login", http.StatusFound)
+// 		return
+// 	}
 
-	user := obj.(*models.User)
-	c.Map(user)
-}
+// 	user := obj.(*models.User)
+// 	c.Map(user)
+// }
 
 // GetLogin shows the login form for the backend.
 func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"github.com/go-martini/martini"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
 	"log"
@@ -11,7 +10,6 @@ import (
 )
 
 var (
-	m          *martini.ClassicMartini
 	cfg        models.Config
 	cfgPath    string
 	importPath string
