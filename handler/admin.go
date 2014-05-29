@@ -17,11 +17,7 @@ func AdminIndex(w http.ResponseWriter, req *http.Request, app *App) {
 		page = 0
 	}
 	comments := paginatedComments(app.Db, page)
-
-	err = app.Templates.ExecuteTemplate(w, "admin_index.tmpl", comments)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	render(w, "admin/index", map[string]interface{}{"comments": comments}, app)
 }
 
 // UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
@@ -30,7 +26,7 @@ func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
 	if err == nil && count > 0 {
 		comments := models.UnapprovedComments(app.Db)
 		ctx := map[string]interface{}{"comments": comments}
-		renderComments(w, "unapproved", ctx, app)
+		render(w, "unapproved", ctx, app)
 	} else {
 		http.Redirect(w, req, app.Config.General.Prefix+"/admin", http.StatusTemporaryRedirect)
 	}
@@ -38,7 +34,7 @@ func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
 
 // GetRegister shows the register form.
 func GetRegister(w http.ResponseWriter, req *http.Request, app *App) {
-	app.Templates.ExecuteTemplate(w, "register.tmpl", nil)
+	render(w, "admin/register", nil, app)
 }
 
 // PostUser will create a new user when no other users are in the database.
@@ -74,7 +70,7 @@ func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
 // GetLogin shows the login form for the backend.
 func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
 	if models.UserCount(app.Db) > 0 {
-		app.Templates.ExecuteTemplate(w, "login.tmpl", nil)
+		render(w, "admin/login", nil, app)
 	} else {
 		http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusTemporaryRedirect)
 	}
@@ -105,7 +101,7 @@ func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 		scheme = "https"
 	}
 	base := []string{scheme, "://", req.Host, app.Config.General.Prefix}
-	app.Templates.ExecuteTemplate(w, "index.tmpl", strings.Join(base, ""))
+	render(w, "index", map[string]interface{}{"base": strings.Join(base, "")}, app)
 }
 
 // PostLogout logs the user out and redirects to the login page.

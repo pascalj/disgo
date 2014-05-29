@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -8,8 +9,11 @@ import (
 	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
 	"html/template"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -65,6 +69,9 @@ func (app *App) viewhelpers() template.FuncMap {
 		},
 		"add": func(args ...int) int {
 			return args[0] + args[1]
+		},
+		"content": func() string {
+			return "No template selected."
 		},
 		"base": func() string {
 			if app.Config.General.Prefix != "" {
@@ -148,18 +155,10 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // Render a single comment.
 func renderComment(w http.ResponseWriter, tmpl string, comment models.Comment, app *App) {
-	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", comment)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-// Render a slice of comments.
-func renderComments(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
-	err := app.Templates.ExecuteTemplate(w, tmpl+".tmpl", ctx)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	render(w, tmpl, map[string]interface{}{"comment": comment}, app)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// }
 }
 
 // Render errors. Always writes JSON encoded
@@ -175,4 +174,54 @@ func renderErrors(w http.ResponseWriter, errors map[string]string, code int) {
 func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
 	comments, pages := models.AllCommentsPaginated(db, page)
 	return &models.PaginatedComments{pages, page, 10, comments}
+}
+
+func render(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
+	funcs := template.FuncMap{
+		"content": func() template.HTML {
+			buf := new(bytes.Buffer)
+			app.Templates.ExecuteTemplate(buf, tmpl, ctx)
+			return template.HTML(buf.String())
+		},
+	}
+	app.Templates.Funcs(funcs)
+	app.Templates.ExecuteTemplate(w, "layout", ctx)
+	// if err := app.Templates[tmpl].Execute(os.Stdout, ctx); err != nil {
+	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
+	// }
+}
+
+func (app *App) buildTemplates() *template.Template {
+	dir := app.Config.General.Templates
+	if dir == "" {
+		dir = "templates/"
+	}
+	t := template.New(dir)
+	template.Must(t.Parse("Disgo"))
+
+	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		r, err := filepath.Rel(dir, path)
+		if err != nil {
+			return err
+		}
+
+		ext := filepath.Ext(r)
+		if ext == ".tmpl" {
+
+			buf, err := ioutil.ReadFile(path)
+			if err != nil {
+				panic(err)
+			}
+
+			name := (r[0 : len(r)-len(ext)])
+			tmpl := t.New(filepath.ToSlash(name))
+			tmpl.Funcs(app.viewhelpers())
+
+			template.Must(tmpl.Funcs(app.viewhelpers()).Parse(string(buf)))
+		}
+
+		return nil
+	})
+
+	return t
 }

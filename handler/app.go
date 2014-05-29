@@ -59,18 +59,7 @@ func (app *App) InitSession() {
 }
 
 func (app *App) ParseTemplates() error {
-	var err error
-	templates := template.New("")
-	templates.Funcs(app.viewhelpers())
-	templates, err = templates.ParseGlob("templates" + "/*.tmpl")
-	if err != nil {
-		return err
-	}
-	templates, err = templates.ParseGlob("templates" + "/admin/*.tmpl")
-	if err != nil {
-		return err
-	}
-	app.Templates = templates
+	app.Templates = app.buildTemplates()
 	return nil
 }
 

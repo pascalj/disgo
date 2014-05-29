@@ -37,10 +37,9 @@ func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 		"name":     name,
 		"comments": comments,
 	}
-	_ = ctx
 
 	if len(comments) > 0 {
-		renderComments(w, "comments", ctx, app)
+		render(w, "comments", ctx, app)
 	}
 }
 
