@@ -42,7 +42,6 @@ func UserByEmail(db *sql.DB, email string) (User, error) {
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
 
 	if err != nil {
-		logErr(err, "Could not load user")
 		return User{}, err
 	}
 	return user, nil

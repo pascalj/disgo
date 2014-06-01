@@ -78,13 +78,13 @@ func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
 }
 
 // PostLogin takes the email and password parameter and logs the user in if they are correct.
-func PostLogin(w http.ResponseWriter, req *http.Request, app *App) {
+func PostSession(w http.ResponseWriter, req *http.Request, app *App) {
 	var user models.User
 
 	email, password := req.FormValue("email"), req.FormValue("password")
 	user, err := models.UserByEmail(app.Db, email)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
+		http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusSeeOther)
 		return
 	}
 

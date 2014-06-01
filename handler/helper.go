@@ -156,9 +156,6 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Render a single comment.
 func renderComment(w http.ResponseWriter, tmpl string, comment models.Comment, app *App) {
 	render(w, tmpl, map[string]interface{}{"comment": comment}, app)
-	// if err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
 }
 
 // Render errors. Always writes JSON encoded
@@ -186,9 +183,6 @@ func render(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app 
 	}
 	app.Templates.Funcs(funcs)
 	app.Templates.ExecuteTemplate(w, "layout", ctx)
-	// if err := app.Templates[tmpl].Execute(os.Stdout, ctx); err != nil {
-	// 	http.Error(w, err.Error(), http.StatusInternalServerError)
-	// }
 }
 
 func (app *App) buildTemplates() *template.Template {
