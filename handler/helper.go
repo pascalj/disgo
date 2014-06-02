@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -69,9 +68,6 @@ func (app *App) viewhelpers() template.FuncMap {
 		},
 		"add": func(args ...int) int {
 			return args[0] + args[1]
-		},
-		"content": func() string {
-			return "No template selected."
 		},
 		"base": func() string {
 			if app.Config.General.Prefix != "" {
@@ -174,24 +170,23 @@ func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
 }
 
 func render(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
-	funcs := template.FuncMap{
-		"content": func() template.HTML {
-			buf := new(bytes.Buffer)
-			app.Templates.ExecuteTemplate(buf, tmpl, ctx)
-			return template.HTML(buf.String())
-		},
-	}
-	app.Templates.Funcs(funcs)
-	app.Templates.ExecuteTemplate(w, "layout", ctx)
+	app.Templates[tmpl].Execute(w, ctx)
 }
 
-func (app *App) buildTemplates() *template.Template {
+func (app *App) buildTemplates() map[string]*template.Template {
 	dir := app.Config.General.Templates
+	templates := make(map[string]*template.Template, 0)
+	must := template.Must
+
 	if dir == "" {
 		dir = "templates/"
 	}
-	t := template.New(dir)
-	template.Must(t.Parse("Disgo"))
+
+	buf, err := ioutil.ReadFile(dir + "layout.tmpl")
+	if err != nil {
+		panic(err)
+	}
+	layout := must(template.New("main").Funcs(app.viewhelpers()).Parse(string(buf)))
 
 	filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		r, err := filepath.Rel(dir, path)
@@ -208,14 +203,15 @@ func (app *App) buildTemplates() *template.Template {
 			}
 
 			name := (r[0 : len(r)-len(ext)])
-			tmpl := t.New(filepath.ToSlash(name))
-			tmpl.Funcs(app.viewhelpers())
-
-			template.Must(tmpl.Funcs(app.viewhelpers()).Parse(string(buf)))
+			if name == "layout" {
+				return nil
+			}
+			newLayout := must(layout.Clone())
+			must(newLayout.New("body").Parse(string(buf)))
+			templates[name] = newLayout
 		}
-
 		return nil
 	})
 
-	return t
+	return templates
 }

@@ -101,7 +101,7 @@ func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 		scheme = "https"
 	}
 	base := []string{scheme, "://", req.Host, app.Config.General.Prefix}
-	render(w, "index", map[string]interface{}{"base": strings.Join(base, "")}, app)
+	render(w, "index", map[string]interface{}{"base": strings.Join(base, ""), "hideNav": true}, app)
 }
 
 // PostLogout logs the user out and redirects to the login page.

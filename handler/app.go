@@ -17,7 +17,7 @@ type App struct {
 	Db           *sql.DB
 	Config       models.Config
 	SessionStore sessions.Store
-	Templates    *template.Template
+	Templates    map[string]*template.Template
 	Notifier     *service.Notifier
 }
 
