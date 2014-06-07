@@ -1,10 +1,10 @@
 package service
 
 import (
+	"database/sql"
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/coopernurse/gorp"
 	"github.com/kennygrant/sanitize"
 	"github.com/pascalj/disgo/models"
 	"io"
@@ -42,7 +42,7 @@ type threadRef struct {
 	Id string `xml:"http://disqus.com/disqus-internals id,attr"`
 }
 
-func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
+func Import(db *sql.DB, xmlReader io.Reader) error {
 	parsed := &disqus{}
 	decoder := xml.NewDecoder(xmlReader)
 	if err := decoder.Decode(parsed); err != nil {
@@ -72,9 +72,10 @@ func Import(dbmap *gorp.DbMap, xmlReader io.Reader) error {
 	fmt.Println("Read", total, "from the file.")
 
 	for i, comment := range comments {
-		if err := dbmap.Insert(&comment); err != nil {
+		if err := comment.Save(db); err != nil {
 			total--
 			fmt.Println("Could not import comment", i)
+			fmt.Println(err)
 		}
 	}
 

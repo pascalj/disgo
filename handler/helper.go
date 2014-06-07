@@ -25,7 +25,7 @@ var (
       Created bigint(20) DEFAULT NULL,
       Email varchar(255) DEFAULT NULL,
       Name varchar(255) DEFAULT NULL,
-      Body varchar(255) DEFAULT NULL,
+      Body text,
       Url varchar(255) DEFAULT NULL,
       ClientIp varchar(255) DEFAULT NULL,
       Approved tinyint(1) DEFAULT NULL,

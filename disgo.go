@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"github.com/pascalj/disgo/handler"
 	"github.com/pascalj/disgo/models"
+	"github.com/pascalj/disgo/service"
 	"log"
 	"net/http"
 	"os"
@@ -24,14 +26,15 @@ func init() {
 }
 
 func main() {
-	// if importPath != "" {
-	// 	file, err := os.Open(importPath)
-	// 	checkErr(err, "Could not open Disqus XML file:")
-	// 	reader := bufio.NewReader(file)
-	// 	return
-	// }
 	app, err := handler.NewApp(cfgPath)
 	checkErr(err, "Unable to start Disgo:")
+	if importPath != "" {
+		file, err := os.Open(importPath)
+		checkErr(err, "Could not open Disqus XML file:")
+		reader := bufio.NewReader(file)
+		service.Import(app.Db, reader)
+		return
+	}
 	http.Handle("/", app.Router)
 	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 }
