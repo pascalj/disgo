@@ -38,12 +38,9 @@
           disgo.onSubmitError(status, result, xhr, form)
         } else {
           var errors = JSON.parse(result);
-          for (var i = 0; i < errors.length; i++) {
-            var fieldNames = errors[i]['fieldNames']
-            for (var j = 0; j < fieldNames.length; j++) {
-              var field = $1('[name=' + fieldNames[j] + ']', el)
-              if (field) $addClass(field, 'error')
-            }
+          for (var error in errors) {
+            var field = $1('[name=' + error + ']', el)
+            if (field) $addClass(field, 'error')
           }
         }
         return

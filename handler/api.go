@@ -86,15 +86,15 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 			w.WriteHeader(500)
 		} else {
 			renderComment(w, "comment", comment, app)
+			session, _ := app.SessionStore.Get(req, SessionName)
+			session.Values["email"] = comment.Email
+			session.Values["name"] = comment.Name
+			session.Save(req, w)
 		}
 	} else {
 		renderErrors(w, valErrors, 422)
 	}
 
-	session, _ := app.SessionStore.Get(req, SessionName)
-	session.Values["email"] = comment.Email
-	session.Values["name"] = comment.Name
-	session.Save(req, w)
 
 	go app.Notifier.CommentCreated(&comment)
 }
