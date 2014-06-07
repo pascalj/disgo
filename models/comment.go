@@ -73,24 +73,37 @@ func (c *Comment) Validate() (bool, map[string]string) {
 }
 
 func (c *Comment) Save(db *sql.DB) error {
-	stmt, err := db.Prepare(`
-		INSERT INTO
-		comments(Email, Name, Body, Created, Url, ClientIp, Approved)
-		VALUES(?, ?, ?, ?, ?, ?, ?)`)
+	var stmt *sql.Stmt
+	var err error
+	if c.Id != 0 {
+		stmt, err = db.Prepare(`
+			UPDATE comments SET
+			Email = ?, Name = ?, Body = ?, Created = ?, Url = ?, ClientIp = ?, Approved = ? WHERE Id = ?`)
+		if err != nil {
+			return err
+		}
+		_, err = stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved, c.Id)
+	} else {
+		stmt, err = db.Prepare(`
+			INSERT INTO
+			comments(Email, Name, Body, Created, Url, ClientIp, Approved)
+			VALUES(?, ?, ?, ?, ?, ?, ?)`)
+		if err != nil {
+			return err
+		}
+		res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
+		if err != nil {
+			return err
+		}
+		lastId, err := res.LastInsertId()
+		if err != nil {
+			return err
+		}
+		c.Id = lastId
+	}
 	if err != nil {
 		return err
 	}
-
-	res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
-	if err != nil {
-		return err
-	}
-
-	lastId, err := res.LastInsertId()
-	if err != nil {
-		return err
-	}
-	c.Id = lastId
 	return nil
 }
 

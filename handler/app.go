@@ -66,17 +66,17 @@ func (app *App) ParseTemplates() error {
 func (app *App) SetRoutes() {
 	r := app.Router
 	r.StrictSlash(true)
-	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
-	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
-	r.Handle("/comments/{id}/approve", app.handle(ApproveComment)).Methods("POST")
-	r.Handle("/comments/{id}/delete", app.handle(DestroyComment)).Methods("POST")
-	r.Handle("/comments/{id}", app.handle(DestroyComment)).Methods("DELETE")
+	r.Handle("/comments", app.handle(CreateComment).addMiddleware(cors)).Methods("POST")
+	r.Handle("/comments", app.handle(GetComments).addMiddleware(cors)).Methods("GET", "HEAD")
+	r.Handle("/comments/{id}/approve", app.handle(ApproveComment).addMiddleware(requireLogin)).Methods("POST")
+	r.Handle("/comments/{id}/delete", app.handle(DestroyComment).addMiddleware(requireLogin)).Methods("POST")
+	r.Handle("/comments/{id}", app.handle(DestroyComment).addMiddleware(requireLogin)).Methods("DELETE")
 
-	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
-	r.Handle("/admin/unapproved", app.handle(UnapprovedComments)).Methods("GET", "HEAD")
+	r.Handle("/admin/", app.handle(AdminIndex).addMiddleware(requireLogin)).Methods("GET", "HEAD")
+	r.Handle("/admin/unapproved", app.handle(UnapprovedComments).addMiddleware(requireLogin)).Methods("GET", "HEAD")
 	r.Handle("/login", app.handle(GetLogin)).Methods("GET", "HEAD")
 	r.Handle("/session", app.handle(PostSession)).Methods("POST")
-	r.Handle("/logout", app.handle(PostLogout)).Methods("POST")
+	r.Handle("/logout", app.handle(PostLogout).addMiddleware(requireLogin)).Methods("POST")
 	r.Handle("/register", app.handle(GetRegister)).Methods("GET", "HEAD")
 	r.Handle("/user", app.handle(PostUser)).Methods("POST")
 

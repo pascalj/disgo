@@ -79,30 +79,6 @@ func (app *App) viewhelpers() template.FuncMap {
 	}
 }
 
-// rateLimit checks if a client is still allowed to post comments.
-// func rateLimit(ren render.Render,
-// 	req *http.Request,
-// 	s sessions.Session,
-// 	comment models.Comment,
-// 	cfg models.Config,
-// 	dbmap *gorp.DbMap) {
-// 	if cfg.Rate_Limit.Enable {
-// 		duration := time.Now().Unix() - cfg.Rate_Limit.Seconds
-// 		ip, err := relevantIpBytes(req.RemoteAddr)
-// 		errors := map[string]string{"overall": "Rate limit reached."}
-// 		if err != nil {
-// 			ren.JSON(429, errors)
-// 			return
-// 		}
-// 		count, err := dbmap.SelectInt("select count(*) from comments where ClientIp=$1 and Created>$2", ip, duration)
-
-// 		if err != nil || count >= cfg.Rate_Limit.Max_Comments {
-// 			ren.JSON(429, errors)
-// 			return
-// 		}
-// 	}
-// }
-
 // Get relevant bytes from the IP address. This is used to rate limit v6 addresses as
 // the last 64 will get shuffled.
 func relevantIpBytes(remoteAddr string) (string, error) {
@@ -132,21 +108,97 @@ func checkErr(err error, msg string) {
 
 // Handler wrapper that injects the App into the handler functions.
 func (app *App) handle(handler disgoHandler) *appHandler {
-	return &appHandler{handler, app}
+	return &appHandler{handler, app, make([]middleware, 0)}
 }
 
 type disgoHandler func(http.ResponseWriter, *http.Request, *App)
+type middleware func(http.ResponseWriter, *http.Request, *App) bool
 type appHandler struct {
-	handler disgoHandler
-	app     *App
+	handler    disgoHandler
+	app        *App
+	middleware []middleware
 }
 
+// Implement the Handler
 func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	for _, origin := range h.app.Config.General.Origin {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+	for _, handler := range h.middleware {
+		halt := handler(w, r, h.app)
+		if halt {
+			return
+		}
 	}
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 	h.handler(w, r, h.app)
+}
+
+func (h *appHandler) addMiddleware(mw middleware) *appHandler {
+	h.middleware = append(h.middleware, mw)
+	return h
+}
+
+// Require a user to be logged in. This middleware will redirect to the login page
+// of the userId is not set in the session and do nothing if it is set.
+func requireLogin(rw http.ResponseWriter, req *http.Request, app *App) bool {
+	ses, _ := app.SessionStore.Get(req, SessionName)
+	var err error
+	var id int64
+	if val := ses.Values["userId"]; val != nil {
+		id = val.(int64)
+	}
+
+	if err == nil {
+		_, err = models.UserById(app.Db, id)
+	}
+
+	if err != nil {
+		http.Redirect(rw, req, app.Config.General.Prefix+"/login", http.StatusSeeOther)
+		return true
+	}
+	return false
+}
+
+// rateLimit checks if a client is still allowed to post comments.
+func rateLimit(rw http.ResponseWriter, req *http.Request, app *App) bool {
+	if app.Config.Rate_Limit.Enable {
+		duration := time.Now().Unix() - app.Config.Rate_Limit.Seconds
+		ip, err := relevantIpBytes(req.RemoteAddr)
+		errors := map[string]string{"overall": "Rate limit reached."}
+
+		if err != nil {
+			renderErrors(rw, errors, 429)
+			return true
+		}
+
+		var count int64
+		row := app.Db.QueryRow("select count(*) from comments where ClientIp=? and Created>?", ip, duration)
+		err = row.Scan(&count)
+
+		if err != nil || count >= app.Config.Rate_Limit.Max_Comments {
+			renderErrors(rw, errors, 429)
+			return true
+		}
+	}
+	return false
+}
+
+// Middleware to send CORS headers.
+func cors(rw http.ResponseWriter, req *http.Request, app *App) bool {
+	origin := req.Header.Get("Origin")
+	if origin == "" {
+		return false
+	}
+
+	for _, allowedOrigin := range app.Config.General.Origin {
+		if allowedOrigin == origin {
+			rw.Header().Set("Access-Control-Allow-Origin", origin)
+			rw.Header().Set("Access-Control-Allow-Credentials", "true")
+			if req.Method == "OPTIONS" {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // Render a single comment.

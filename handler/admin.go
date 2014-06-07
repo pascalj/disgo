@@ -28,7 +28,7 @@ func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
 		ctx := map[string]interface{}{"comments": comments}
 		render(w, "unapproved", ctx, app)
 	} else {
-		http.Redirect(w, req, app.Config.General.Prefix+"/admin", http.StatusTemporaryRedirect)
+		http.Redirect(w, req, app.Config.General.Prefix+"/admin", http.StatusFound)
 	}
 }
 
@@ -45,34 +45,19 @@ func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
 		user := models.NewUser(email, password)
 		err := user.Save(app.Db)
 		if err != nil {
-			http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusTemporaryRedirect)
+			http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusFound)
 		} else {
-			http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
+			http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusFound)
 		}
 	}
 }
 
-// RegireLogin is a middleware that ensures that only an admin call the following
-// handler(s).
-// func RequireLogin(rw http.ResponseWriter, req *http.Request,
-// 	s sessions.Session, dbmap *gorp.DbMap, c martini.Context, cfg models.Config) {
-// 	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
-
-// 	if err != nil || obj == nil {
-// 		http.Redirect(rw, req, cfg.General.Prefix+"/login", http.StatusFound)
-// 		return
-// 	}
-
-// 	user := obj.(*models.User)
-// 	c.Map(user)
-// }
-
 // GetLogin shows the login form for the backend.
 func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
 	if models.UserCount(app.Db) > 0 {
-		render(w, "admin/login", nil, app)
+		render(w, "admin/login", map[string]interface{}{"hideNav": true}, app)
 	} else {
-		http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusTemporaryRedirect)
+		http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusSeeOther)
 	}
 
 }
@@ -92,9 +77,10 @@ func PostSession(w http.ResponseWriter, req *http.Request, app *App) {
 	session.Values["userId"] = user.Id
 	session.Save(req, w)
 
-	http.Redirect(w, req, app.Config.General.Prefix+"/admin/", http.StatusTemporaryRedirect)
+	http.Redirect(w, req, app.Config.General.Prefix+"/admin/", http.StatusSeeOther)
 }
 
+// GetIndex shows a simple introduction.
 func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 	scheme := "http"
 	if req.TLS != nil {
@@ -109,5 +95,5 @@ func PostLogout(w http.ResponseWriter, req *http.Request, app *App) {
 	session, _ := app.SessionStore.Get(req, SessionName)
 	session.Values["userId"] = nil
 	session.Save(req, w)
-	http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusTemporaryRedirect)
+	http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusFound)
 }

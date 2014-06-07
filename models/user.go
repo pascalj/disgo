@@ -37,7 +37,18 @@ func (u *User) Save(db *sql.DB) error {
 }
 
 func UserByEmail(db *sql.DB, email string) (User, error) {
-	row := db.QueryRow("SELECT * FROM Users WHERE Email = ?", email)
+	row := db.QueryRow("SELECT Id, Email, Password FROM Users WHERE Email = ?", email)
+	user := User{}
+	err := row.Scan(&user.Id, &user.Email, &user.Password)
+
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
+func UserById(db *sql.DB, id int64) (User, error) {
+	row := db.QueryRow("SELECT Id, Email, Password FROM Users WHERE Id = ?", id)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
 
