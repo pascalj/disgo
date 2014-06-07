@@ -209,6 +209,7 @@ func (app *App) buildTemplates() map[string]*template.Template {
 			newLayout := must(layout.Clone())
 			must(newLayout.New("body").Parse(string(buf)))
 			templates[name] = newLayout
+			templates["partial/"+name] = must(template.New(name).Funcs(app.viewhelpers()).Parse(string(buf)))
 		}
 		return nil
 	})

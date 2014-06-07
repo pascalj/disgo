@@ -68,7 +68,8 @@ func (app *App) SetRoutes() {
 	r.StrictSlash(true)
 	r.Handle("/comments", app.handle(CreateComment)).Methods("POST")
 	r.Handle("/comments", app.handle(GetComments)).Methods("GET", "HEAD")
-	r.Handle("/comments/approve/{id}", app.handle(ApproveComment)).Methods("POST")
+	r.Handle("/comments/{id}/approve", app.handle(ApproveComment)).Methods("POST")
+	r.Handle("/comments/{id}/delete", app.handle(DestroyComment)).Methods("POST")
 	r.Handle("/comments/{id}", app.handle(DestroyComment)).Methods("DELETE")
 
 	r.Handle("/admin/", app.handle(AdminIndex)).Methods("GET", "HEAD")
@@ -78,6 +79,7 @@ func (app *App) SetRoutes() {
 	r.Handle("/logout", app.handle(PostLogout)).Methods("POST")
 	r.Handle("/register", app.handle(GetRegister)).Methods("GET", "HEAD")
 	r.Handle("/user", app.handle(PostUser)).Methods("POST")
+
 	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }

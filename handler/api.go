@@ -12,7 +12,7 @@ import (
 // displays approved comments.
 func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 	qry := req.URL.Query()
-	ses, _ := app.SessionStore.Get(req, "disgo")
+	ses, _ := app.SessionStore.Get(req, SessionName)
 	email := ""
 	name := ""
 	if val := ses.Values["email"]; val != nil {
@@ -39,7 +39,7 @@ func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 	}
 
 	if len(comments) > 0 {
-		render(w, "comments", ctx, app)
+		render(w, "partial/comments", ctx, app)
 	}
 }
 
@@ -85,16 +85,15 @@ func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
 		if err != nil {
 			w.WriteHeader(500)
 		} else {
-			renderComment(w, "comment", comment, app)
 			session, _ := app.SessionStore.Get(req, SessionName)
 			session.Values["email"] = comment.Email
 			session.Values["name"] = comment.Name
 			session.Save(req, w)
+			renderComment(w, "partial/comment", comment, app)
 		}
 	} else {
 		renderErrors(w, valErrors, 422)
 	}
-
 
 	go app.Notifier.CommentCreated(&comment)
 }

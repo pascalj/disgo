@@ -1,8 +1,8 @@
 <div class="comment">
-  <div class="date">{{.Created | formatTime}}</div>
-  <div class="name">{{.Name}}</div>
-  <img class="avatar" src="{{.Email | gravatar}}" alt=""/>
-  {{if . | awaitingApproval}}
+  <div class="date">{{.comment.Created | formatTime}}</div>
+  <div class="name">{{.comment.Name}}</div>
+  <img class="avatar" src="{{.comment.Email | gravatar}}" alt=""/>
+  {{if .comment | awaitingApproval}}
     <div class="awaiting-approval">
       This comment is not yet approved.
     </div>
@@ -10,9 +10,9 @@
 
   <div class="comment-text">
     {{if usesMarkdown}}
-      {{.Body | markdown}}
+      {{.comment.Body | markdown}}
     {{else}}
-      {{.Body}}
+      {{.comment.Body}}
     {{end}}
   </div>
 </div>
