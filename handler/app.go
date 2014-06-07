@@ -12,6 +12,7 @@ import (
 	"net/http"
 )
 
+// App stores the context.
 type App struct {
 	Router       *mux.Router
 	Db           *sql.DB
@@ -45,6 +46,7 @@ func (app *App) setup(cfgPath string) error {
 	return nil
 }
 
+// Load the config.
 func (app *App) LoadConfig(path string) error {
 	cfg, err := models.LoadConfig(path)
 	if err != nil {
@@ -54,15 +56,18 @@ func (app *App) LoadConfig(path string) error {
 	return nil
 }
 
+// Initialize the session.
 func (app *App) InitSession() {
 	app.SessionStore = sessions.NewCookieStore([]byte(app.Config.General.Secret))
 }
 
+// Parse and store all templates.
 func (app *App) ParseTemplates() error {
 	app.Templates = app.buildTemplates()
 	return nil
 }
 
+// Set all routes for the app.
 func (app *App) SetRoutes() {
 	r := app.Router
 	r.StrictSlash(true)
@@ -73,7 +78,6 @@ func (app *App) SetRoutes() {
 	r.Handle("/comments/{id}", app.handle(DestroyComment).addMiddleware(requireLogin)).Methods("DELETE")
 
 	r.Handle("/admin/", app.handle(AdminIndex).addMiddleware(requireLogin)).Methods("GET", "HEAD")
-	r.Handle("/admin/unapproved", app.handle(UnapprovedComments).addMiddleware(requireLogin)).Methods("GET", "HEAD")
 	r.Handle("/login", app.handle(GetLogin)).Methods("GET", "HEAD")
 	r.Handle("/session", app.handle(PostSession)).Methods("POST")
 	r.Handle("/logout", app.handle(PostLogout).addMiddleware(requireLogin)).Methods("POST")
@@ -84,6 +88,7 @@ func (app *App) SetRoutes() {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }
 
+// Connect the DB and store the db pool reference.
 func (app *App) ConnectDb() error {
 	db, err := sql.Open(app.Config.Database.Driver, app.Config.Database.Access)
 	if err != nil {

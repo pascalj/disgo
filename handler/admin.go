@@ -20,18 +20,6 @@ func AdminIndex(w http.ResponseWriter, req *http.Request, app *App) {
 	render(w, "admin/index", map[string]interface{}{"comments": comments}, app)
 }
 
-// UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
-func UnapprovedComments(w http.ResponseWriter, req *http.Request, app *App) {
-	count, err := models.UnapprovedCommentsCount(app.Db)
-	if err == nil && count > 0 {
-		comments := models.UnapprovedComments(app.Db)
-		ctx := map[string]interface{}{"comments": comments}
-		render(w, "unapproved", ctx, app)
-	} else {
-		http.Redirect(w, req, app.Config.General.Prefix+"/admin", http.StatusFound)
-	}
-}
-
 // GetRegister shows the register form.
 func GetRegister(w http.ResponseWriter, req *http.Request, app *App) {
 	render(w, "admin/register", nil, app)

@@ -42,6 +42,18 @@ var (
 	SessionName = "disgo"
 )
 
+// DisgoHandler is a wrapper for a HandlerFunc that adds the app struct.
+type disgoHandler func(http.ResponseWriter, *http.Request, *App)
+
+// A middleware can write something to the ResponseWriter but has to return true
+// to stop the middleware chain.
+type middleware func(http.ResponseWriter, *http.Request, *App) bool
+type appHandler struct {
+	handler    disgoHandler
+	app        *App
+	middleware []middleware
+}
+
 // Viewhelpers for rendering.
 func (app *App) viewhelpers() template.FuncMap {
 	return template.FuncMap{
@@ -111,14 +123,6 @@ func (app *App) handle(handler disgoHandler) *appHandler {
 	return &appHandler{handler, app, make([]middleware, 0)}
 }
 
-type disgoHandler func(http.ResponseWriter, *http.Request, *App)
-type middleware func(http.ResponseWriter, *http.Request, *App) bool
-type appHandler struct {
-	handler    disgoHandler
-	app        *App
-	middleware []middleware
-}
-
 // Implement the Handler
 func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for _, handler := range h.middleware {
@@ -131,6 +135,7 @@ func (h *appHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.handler(w, r, h.app)
 }
 
+// Add a middleware to a handler.
 func (h *appHandler) addMiddleware(mw middleware) *appHandler {
 	h.middleware = append(h.middleware, mw)
 	return h
@@ -216,15 +221,19 @@ func renderErrors(w http.ResponseWriter, errors map[string]string, code int) {
 	}
 }
 
+// PaginatedComments loads the paginated comments on a page. Default page is 0.
 func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
 	comments, pages := models.AllCommentsPaginated(db, page)
 	return &models.PaginatedComments{pages, page, 10, comments}
 }
 
+// Render a template.
 func render(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
 	app.Templates[tmpl].Execute(w, ctx)
 }
 
+// Load and build all templates and store them in the app struct.
+// Templates without the layout will be store in templates['partial'+templateName].
 func (app *App) buildTemplates() map[string]*template.Template {
 	dir := app.Config.General.Templates
 	templates := make(map[string]*template.Template, 0)
@@ -261,6 +270,7 @@ func (app *App) buildTemplates() map[string]*template.Template {
 			newLayout := must(layout.Clone())
 			must(newLayout.New("body").Parse(string(buf)))
 			templates[name] = newLayout
+			// store the template without layout as a partial
 			templates["partial/"+name] = must(template.New(name).Funcs(app.viewhelpers()).Parse(string(buf)))
 		}
 		return nil

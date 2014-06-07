@@ -36,7 +36,12 @@ func main() {
 		return
 	}
 	http.Handle("/", app.Router)
-	http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	http.ListenAndServe(host+":"+port, nil)
 }
 
 func checkErr(err error, description string) {
