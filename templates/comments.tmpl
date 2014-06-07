@@ -9,7 +9,25 @@
 
   <div class="comments">
     {{range .comments}}
-      {{template "comment" .}}
+    <div class="comment">
+      <div class="date">{{.Created | formatTime}}</div>
+      <div class="name">{{.Name}}</div>
+      <img class="avatar" src="{{.Email | gravatar}}" alt=""/>
+      {{if . | awaitingApproval}}
+        <div class="awaiting-approval">
+          This comment is not yet approved.
+        </div>
+      {{end}}
+
+      <div class="comment-text">
+        {{if usesMarkdown}}
+          {{.Body | markdown}}
+        {{else}}
+          {{.Body}}
+        {{end}}
+      </div>
+    </div>
+
     {{end}}
   </div>
 </div>

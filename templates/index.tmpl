@@ -1,71 +1,13 @@
-<!DOCTYPE html>
-<html class="no-js">
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Disgo - Admin</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <base href="{{.}}">
+<h3>Embedding</h3>
+<p>To enable Disgo on your page, add the following line to your website:</p>
 
-        <link rel="stylesheet" href="css/admin/normalize.min.css">
-        <link rel="stylesheet" href="css/admin/foundation.min.css">
-        <link rel="stylesheet" href="css/admin/layout.css">
-        <style type="text/css">
-        pre.hl  { color:#000000; font-family:'Courier New',monospace;}
-        .hl.num { color:#b07e00; }
-        .hl.esc { color:#ff00ff; }
-        .hl.str { color:#bf0303; }
-        .hl.pps { color:#818100; }
-        .hl.slc { color:#838183; font-style:italic; }
-        .hl.com { color:#838183; font-style:italic; }
-        .hl.ppc { color:#008200; }
-        .hl.opt { color:#000000; }
-        .hl.ipl { color:#0057ae; }
-        .hl.lin { color:#555555; }
-        .hl.kwa { color:#000000; font-weight:bold; }
-        .hl.kwb { color:#0057ae; }
-        .hl.kwc { color:#000000; font-weight:bold; }
-        .hl.kwd { color:#010181; }
-        a.button {
-            float: right;
-            margin-top: 15px;
-        }
-        </style>
-    </head>
-    <body>
-        <nav class="top-bar" data-topbar>
-            <ul class="title-area">
-                <li class="name">
-                    <h1><a href="/"><img src="img/disgo.svg" alt=""> Disgo</a></h1>
-                </li>
-            </ul>
-            <section class="top-bar-section">
-                <ul class="right">
-                    <li><a href="admin">Admin</a></li>
-                </ul>
-            </section>
-        </nav>
-        <div class="row">
-            <div class="large-6 columns">
-                <h3>Embedding</h3>
-                <p>To enable Disgo on your page, add the following line to your website:</p>
-
-
-        <pre class="hl panel"><span class="hl kwa">&lt;script&gt;</span>
+<pre class="hl panel"><span class="hl kwa">&lt;script&gt;</span>
 <span class="hl kwa">var</span> disgo <span class="hl opt">= {</span>
     base<span class="hl opt">:</span> <span class="hl str">'{{.}}'</span>
 <span class="hl opt">}</span>
 document<span class="hl opt">.</span><span class="hl kwd">write</span><span class="hl opt">(</span><span class="hl str">'&lt;script src=&quot;'</span> <span class="hl opt">+</span> disgo<span class="hl opt">.</span>base <span class="hl opt">+</span> <span class="hl str">'/js/disgo.js&quot;&gt;</span><span class="hl esc">\x3C</span><span class="hl str">/script&gt;'</span><span class="hl opt">)</span>
 <span class="hl kwa">&lt;/script&gt;</span></pre>
 
-                <p>Add a comments section by providing an element with a data-disgo-url attribute. Example:</p>
-                <pre class="hl panel">
+<p>Add a comments section by providing an element with a data-disgo-url attribute. Example:</p>
+<pre class="hl panel">
 <span class="hl kwa">&lt;div</span> <span class="hl kwb">data-disgo-url</span>=<span class="hl str">&quot;http://example.com/2014/04/01/facebook-buys-golang&quot;</span><span class="hl kwa">&gt;&lt;/div&gt;</span></pre>
-            </div>
-        </div>
-        <footer>
-          <a href="http://github.com/pascalj/disgo">Disgo</a> by <a href="http://www.pascalj.de">Pascal Jungblut</a> — MIT licence
-        </footer>
-    </body>
-</html>

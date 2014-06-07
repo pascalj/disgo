@@ -2,15 +2,65 @@
   <div class="large-6 columns">
     <h3>Recent comments</h3>
     <div class="comments">
-      {{range .Comments}}
-        {{template "admin/comment" .}}
+      {{range .comments.Comments}}
+      <div class="comment row">
+        <div class="large-6 panel columns">
+          <div class="row">
+            <div class="large-1 show-for-large-up columns">
+              <img class="avatar" src="{{.Email | gravatar}}" alt=""/><br>
+              {{if .Approved}}
+                <span class="label success approved">Approved</span>
+              {{end}}
+            </div>
+            <div class="large-5 columns">
+              <div class="row">
+                <div class="large-3 small-3 columns">
+                  <h5>{{.Name}}</h5>
+                  <div class="date">{{.Created | formatTime}}</div>
+                  <a class="email" href="mailto:{{.Email}}">{{.Email}}</a>
+                  <div class="url">On <a class="url" href="{{.Url}}">{{.Url}}</a></div>
+                  <div class="client-ip">{{.ClientIp}}</div>
+                </div>
+                <div class="large-3 small-3 columns">
+                  <ul class="button-group radius">
+                    {{if . | awaitingApproval}}
+                      <li>
+                        <form action="/comments/{{.Id}}/approve" method="post" class="approve">
+                          <input type="submit" value="Approve" class="button success tiny"/>
+                        </form>
+                      </li>
+                    {{end}}
+                    <li>
+                      <form action="/comments/{{.Id}}/delete" method="post" class="delete">
+                        <input type="submit" value="Delete" class="button secondary tiny"/>
+                      </form>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="row comment-text">
+                <div class="large-6 columns">
+                  <hr>
+                  {{if usesMarkdown}}
+                    {{.Body | markdown}}
+                  {{else}}
+                    {{.Body}}
+                  {{end}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       {{end}}
+
+
     </div>
-    {{if gt .TotalPages 1}}
+    {{if gt .comments.TotalPages 1}}
       <div class="pagination-centered">
         <ul class="pagination">
-          {{$pagination := .}}
-          {{range $index, $element := .TotalPages|times}}
+          {{$pagination := .comments}}
+          {{range $index, $element := .comments.TotalPages|times}}
             {{if eq $index $pagination.Page}}
               <li class="current"><a href="">{{add $index 1}}</a></li>
             {{else}}

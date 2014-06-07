@@ -1,120 +1,120 @@
 package handler
 
 import (
-	"github.com/coopernurse/gorp"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessions"
+	"github.com/gorilla/mux"
 	"github.com/pascalj/disgo/models"
-	"github.com/pascalj/disgo/service"
 	"net/http"
-	"strings"
+	"strconv"
 	"time"
 )
 
 // GetComments will display all comments for a given URL-parameter. If configured, it only
 // displays approved comments.
-func GetComments(
-	ren render.Render,
-	view models.View,
-	dbmap *gorp.DbMap,
-	session sessions.Session,
-	req *http.Request,
-	cfg models.Config) {
-	var comments []models.Comment
+func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 	qry := req.URL.Query()
-	if cfg.General.Approval {
-		dbmap.Select(&comments, "select * from comments where (approved = 1 OR email = :email) and url = :url",
-			map[string]interface{}{"email": session.Get("email"), "url": qry["url"][0]})
-	} else {
-		dbmap.Select(&comments, "select * from comments where url=:url", map[string]interface{}{"url": qry["url"][0]})
+	ses, _ := app.SessionStore.Get(req, SessionName)
+	email := ""
+	name := ""
+	if val := ses.Values["email"]; val != nil {
+		email = val.(string)
 	}
-	ctx := map[string]interface{}{
-		"email": session.Get("email"),
-		"name":  session.Get("name"),
+	if val := ses.Values["name"]; val != nil {
+		name = val.(string)
 	}
-	if comments != nil {
-		view.RenderComments(comments, ctx, ren)
-	} else {
-		view.RenderComments([]models.Comment{}, ctx, ren)
+	comments := make([]models.Comment, 0)
+	if qry["url"] == nil {
+		return
 	}
-}
 
-// GetComment show one comment by id.
-func GetComment(ren render.Render, view models.View, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.JSON(404, nil)
+	if app.Config.General.Approval {
+		comments = models.ApprovedComments(app.Db, qry["url"][0], email)
 	} else {
-		comment := obj.(*models.Comment)
-		view.RenderComment(*comment, nil, ren)
+		comments = models.AllComments(app.Db, qry["url"][0])
+	}
+
+	ctx := map[string]interface{}{
+		"email":    email,
+		"name":     name,
+		"comments": comments,
+	}
+
+	if len(comments) > 0 {
+		render(w, "partial/comments", ctx, app)
 	}
 }
 
 // ApproveComment allows admins to approve a comment by id.
-func ApproveComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.Error(404)
+func ApproveComment(w http.ResponseWriter, req *http.Request, app *App) {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(422)
+		return
+	}
+	comment := models.GetComment(app.Db, id)
+	if comment == nil {
+		w.WriteHeader(404)
 	} else {
-		comment := obj.(*models.Comment)
 		comment.Approved = true
-		dbmap.Update(comment)
-		ren.Redirect("/admin")
+		comment.Save(app.Db)
+		http.Redirect(w, req, "/admin", 303)
 	}
 }
 
 // CreateComment validates and creates a new comment. It also saves the client's IP-adress
 // to reduce spam.
-func CreateComment(ren render.Render,
-	view models.View,
-	comment models.Comment,
-	req *http.Request,
-	dbmap *gorp.DbMap,
-	session sessions.Session,
-	notifier *service.Notifier) {
+func CreateComment(w http.ResponseWriter, req *http.Request, app *App) {
+	comment := models.NewComment(
+		req.FormValue("email"),
+		req.FormValue("name"),
+		req.FormValue("title"),
+		req.FormValue("body"),
+		req.FormValue("url"),
+		req.RemoteAddr)
 	comment.Created = time.Now().Unix()
-	comment.ClientIp = strings.Split(req.RemoteAddr, ":")[0]
-	err := dbmap.Insert(&comment)
+
+	ip, err := relevantIpBytes(req.RemoteAddr)
 	if err != nil {
-		ren.JSON(400, err.Error())
-	} else {
-		session.Set("email", comment.Email)
-		session.Set("name", comment.Name)
-		go notifier.CommentCreated(&comment)
-		view.RenderComment(comment, nil, ren)
+		ip = req.RemoteAddr
 	}
+	comment.ClientIp = ip
+
+	valid, valErrors := comment.Validate()
+	if valid {
+		err := comment.Save(app.Db)
+		if err != nil {
+			w.WriteHeader(500)
+		} else {
+			session, _ := app.SessionStore.Get(req, SessionName)
+			session.Values["email"] = comment.Email
+			session.Values["name"] = comment.Name
+			session.Save(req, w)
+			renderComment(w, "partial/comment", comment, app)
+		}
+	} else {
+		renderErrors(w, valErrors, 422)
+	}
+
+	go app.Notifier.CommentCreated(&comment)
 }
 
 // DestroyComment deletes a comment from the database by id.
-func DestroyComment(ren render.Render, params martini.Params, dbmap *gorp.DbMap) {
-	obj, err := dbmap.Get(models.Comment{}, params["id"])
-	if err != nil || obj == nil {
-		ren.JSON(404, nil)
+func DestroyComment(w http.ResponseWriter, req *http.Request, app *App) {
+	vars := mux.Vars(req)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		w.WriteHeader(422)
+		return
+	}
+	comment := models.GetComment(app.Db, id)
+	if comment == nil {
+		w.WriteHeader(404)
 	} else {
-		comment := obj.(*models.Comment)
-		count, err := dbmap.Delete(comment)
-		if count != 1 || err != nil {
-			ren.JSON(500, err.Error())
+		err := comment.Delete(app.Db)
+		if err != nil {
+			w.WriteHeader(500)
 		} else {
-			ren.Redirect("/admin")
+			http.Redirect(w, req, "/admin", 303)
 		}
-	}
-}
-
-// MapView maps the View type for martini depending on the accept header. It is used
-// to generate the appropriate output for html and json.
-func MapView(ctx martini.Context, res http.ResponseWriter, req *http.Request) {
-	accept := req.Header["Accept"]
-	if accept[0] != "" {
-		accept = strings.Split(accept[0], ",")
-	}
-	switch accept[0] {
-	case "text/html":
-		ctx.MapTo(models.HtmlView{}, (*models.View)(nil))
-		res.Header().Set("Content-Type", "text/html")
-	default:
-		ctx.MapTo(models.JsonView{}, (*models.View)(nil))
-		res.Header().Set("Content-Type", "application/json")
 	}
 }

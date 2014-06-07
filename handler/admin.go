@@ -2,124 +2,86 @@ package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"github.com/coopernurse/gorp"
-	"github.com/go-martini/martini"
-	"github.com/martini-contrib/render"
-	"github.com/martini-contrib/sessions"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 // AdminIndex shows the overview of the admin interface with latest comments.
-func AdminIndex(req *http.Request, ren render.Render, dbmap *gorp.DbMap) {
+func AdminIndex(w http.ResponseWriter, req *http.Request, app *App) {
 	qry := req.URL.Query()
 	page, err := strconv.Atoi(qry.Get("page"))
 
 	if err != nil {
 		page = 0
 	}
-	comments := paginatedComments(dbmap, page)
-	ren.HTML(200, "admin/index", comments, render.HTMLOptions{
-		Layout: "admin/layout",
-	})
-}
-
-// UnapprovedComments will only list unapproved comments, else it behaves like AdminIndex.
-func UnapprovedComments(ren render.Render, dbmap *gorp.DbMap, cfg models.Config) {
-	count, err := dbmap.SelectInt("select count(*) from comments where approved<>1")
-	if err == nil && count > 0 {
-		var comments []models.Comment
-		dbmap.Select(&comments, "select * from comments where approved<>1 order by created desc")
-		ren.HTML(200, "admin/unapproved", comments, render.HTMLOptions{
-			Layout: "admin/layout",
-		})
-	} else {
-		ren.Redirect(cfg.General.Prefix + "/admin")
-	}
-
+	comments := paginatedComments(app.Db, page)
+	render(w, "admin/index", map[string]interface{}{"comments": comments}, app)
 }
 
 // GetRegister shows the register form.
-func GetRegister(ren render.Render) {
-	ren.HTML(200, "admin/register", nil, render.HTMLOptions{
-		Layout: "admin/layout",
-	})
+func GetRegister(w http.ResponseWriter, req *http.Request, app *App) {
+	render(w, "admin/register", nil, app)
 }
 
 // PostUser will create a new user when no other users are in the database.
 // If users are present, it will redirect to the login.
-func PostUser(ren render.Render, req *http.Request, dbmap *gorp.DbMap, cfg models.Config) {
-	if models.UserCount(dbmap) == 0 {
+func PostUser(w http.ResponseWriter, req *http.Request, app *App) {
+	if models.UserCount(app.Db) == 0 {
 		email, password := req.FormValue("email"), req.FormValue("password")
 		user := models.NewUser(email, password)
-		err := dbmap.Insert(&user)
+		err := user.Save(app.Db)
 		if err != nil {
-			ren.Redirect(cfg.General.Prefix + "/register")
+			http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusFound)
 		} else {
-			ren.Redirect(cfg.General.Prefix + "/login")
+			http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusFound)
 		}
 	}
 }
 
-// RegireLogin is a middleware that ensures that only an admin call the following
-// handler(s).
-func RequireLogin(rw http.ResponseWriter, req *http.Request,
-	s sessions.Session, dbmap *gorp.DbMap, c martini.Context, cfg models.Config) {
-	obj, err := dbmap.Get(models.User{}, s.Get("userId"))
-
-	if err != nil || obj == nil {
-		http.Redirect(rw, req, cfg.General.Prefix+"/login", http.StatusFound)
-		return
-	}
-
-	user := obj.(*models.User)
-	c.Map(user)
-}
-
 // GetLogin shows the login form for the backend.
-func GetLogin(ren render.Render, dbmap *gorp.DbMap, cfg models.Config) {
-	if models.UserCount(dbmap) > 0 {
-		ren.HTML(200, "admin/login", nil, render.HTMLOptions{
-			Layout: "layout",
-		})
+func GetLogin(w http.ResponseWriter, req *http.Request, app *App) {
+	if models.UserCount(app.Db) > 0 {
+		render(w, "admin/login", map[string]interface{}{"hideNav": true}, app)
 	} else {
-		ren.Redirect(cfg.General.Prefix + "/register")
+		http.Redirect(w, req, app.Config.General.Prefix+"/register", http.StatusSeeOther)
 	}
 
 }
 
 // PostLogin takes the email and password parameter and logs the user in if they are correct.
-func PostLogin(ren render.Render,
-	req *http.Request,
-	session sessions.Session,
-	dbmap *gorp.DbMap,
-	cfg models.Config) {
+func PostSession(w http.ResponseWriter, req *http.Request, app *App) {
 	var user models.User
 
 	email, password := req.FormValue("email"), req.FormValue("password")
-	err := dbmap.SelectOne(&user, "select * from users where email = :email", map[string]interface{}{"email": email})
+	user, err := models.UserByEmail(app.Db, email)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		ren.Redirect(cfg.General.Prefix + "/login")
+		http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusSeeOther)
 		return
 	}
 
-	session.Set("userId", user.Id)
-	ren.Redirect(cfg.General.Prefix + "/admin/")
+	session, _ := app.SessionStore.Get(req, SessionName)
+	session.Values["userId"] = user.Id
+	session.Save(req, w)
+
+	http.Redirect(w, req, app.Config.General.Prefix+"/admin/", http.StatusSeeOther)
+}
+
+// GetIndex shows a simple introduction.
+func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
+	scheme := "http"
+	if req.TLS != nil {
+		scheme = "https"
+	}
+	base := []string{scheme, "://", req.Host, app.Config.General.Prefix}
+	render(w, "index", map[string]interface{}{"base": strings.Join(base, ""), "hideNav": true}, app)
 }
 
 // PostLogout logs the user out and redirects to the login page.
-func PostLogout(ren render.Render, session sessions.Session, cfg models.Config) {
-	session.Clear()
-	ren.Redirect(cfg.General.Prefix + "/login")
-}
-
-func paginatedComments(dbmap *gorp.DbMap, page int) *models.PaginatedComments {
-	var comments []models.Comment
-	pages, err := dbmap.SelectInt("select ceil(count(*)/10) from comments")
-	if err != nil {
-		pages = 1
-	}
-	dbmap.Select(&comments, "select * from comments order by created desc limit 10 offset ?", page*10)
-	return &models.PaginatedComments{int(pages), page, 10, comments}
+func PostLogout(w http.ResponseWriter, req *http.Request, app *App) {
+	session, _ := app.SessionStore.Get(req, SessionName)
+	session.Values["userId"] = nil
+	session.Save(req, w)
+	http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusFound)
 }
