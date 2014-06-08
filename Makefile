@@ -1,26 +1,25 @@
 #!/usr/bin/make -f
 
-SHELL=/bin/bash
+OS = darwin linux freebsd windows
+ARCHS = 386 amd
 
 all: build release
 
 build: deps
 	go build
 
-release: clean deps golang-crosscompile
-	mkdir -p build
-	source golang-crosscompile/crosscompile.bash; \
-	go-darwin-386 build -o build/disgo-darwin-i386; \
-	go-darwin-amd64 build -o build/disgo-darwin-amd64; \
-	go-linux-386 build -o build/disgo-linux-i386; \
-	go-linux-amd64 build -o build/disgo-linux-amd64; \
-	go-linux-arm build -o build/disgo-linux-armv6l; \
-	go-freebsd-386 build -o build/disgo-freebsd-i386; \
-	go-freebsd-amd64 build -o build/disgo-freebsd-amd64
-	cp -r public templates disgo.gcfg.sample README.md build/
-
-golang-crosscompile:
-	git clone https://github.com/davecheney/golang-crosscompile.git
+release: clean deps
+	@for arch in $(ARCHS);\
+	do \
+		for os in $(OS);\
+		do \
+			echo "Building $$os-$$arch"; \
+			mkdir -p build/disgo-$$os-$$arch/; \
+			GOOS=darwin GOARCH=386 go build -o build/disgo-$$os-$$arch/disgo; \
+			cp -r public templates disgo.gcfg.sample README.md build/disgo-$$os-$$arch/; \
+			tar cz -C build -f build/disgo-$$os-$$arch.tar.gz disgo-$$os-$$arch; \
+		done \
+	done
 
 deps:
 	go get
