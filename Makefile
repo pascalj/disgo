@@ -1,7 +1,7 @@
 #!/usr/bin/make -f
 
 OS = darwin linux freebsd windows
-ARCHS = 386 amd
+ARCHS = 386 amd64
 
 all: build release
 
@@ -15,7 +15,7 @@ release: clean deps
 		do \
 			echo "Building $$os-$$arch"; \
 			mkdir -p build/disgo-$$os-$$arch/; \
-			GOOS=darwin GOARCH=386 go build -o build/disgo-$$os-$$arch/disgo; \
+			GOOS=$$os GOARCH=$$arch go build -o build/disgo-$$os-$$arch/disgo; \
 			cp -r public templates disgo.gcfg.sample README.md build/disgo-$$os-$$arch/; \
 			tar cz -C build -f build/disgo-$$os-$$arch.tar.gz disgo-$$os-$$arch; \
 		done \
