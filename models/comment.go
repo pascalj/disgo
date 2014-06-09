@@ -121,7 +121,7 @@ func (c *Comment) Delete(db *sql.DB) error {
 }
 
 func GetComment(db *sql.DB, id int) *Comment {
-	row := db.QueryRow("SELECT * FROM Comments WHERE Id = ?", id)
+	row := db.QueryRow("SELECT * FROM comments WHERE Id = ?", id)
 	comment, err := scanComment(row)
 	if err != nil {
 		return nil
@@ -132,7 +132,7 @@ func GetComment(db *sql.DB, id int) *Comment {
 
 func UnapprovedComments(db *sql.DB) []Comment {
 	comments := make([]Comment, 0)
-	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 0)")
+	rows, err := db.Query("SELECT * FROM comments WHERE (Approved = 0)")
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return comments
@@ -162,7 +162,7 @@ func UnapprovedComments(db *sql.DB) []Comment {
 }
 
 func ApprovedComments(db *sql.DB, url string, email string) []Comment {
-	rows, err := db.Query("SELECT * FROM Comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
+	rows, err := db.Query("SELECT * FROM comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return nil
@@ -179,13 +179,13 @@ func ApprovedComments(db *sql.DB, url string, email string) []Comment {
 
 func UnapprovedCommentsCount(db *sql.DB) (int, error) {
 	var count int
-	err := db.QueryRow("SELECT * FROM Comments WHERE Approved<>1").Scan(&count)
+	err := db.QueryRow("SELECT * FROM comments WHERE Approved<>1").Scan(&count)
 	return count, err
 }
 
 func AllComments(db *sql.DB, url string) []Comment {
 	comments := make([]Comment, 0)
-	rows, err := db.Query("SELECT * FROM Comments WHERE Url = ?", url)
+	rows, err := db.Query("SELECT * FROM comments WHERE Url = ?", url)
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return comments
@@ -219,7 +219,7 @@ func logErr(err error, description string) {
 }
 
 func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
-	rows, err := db.Query("SELECT * FROM COMMENTS ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
+	rows, err := db.Query("SELECT * FROM comments ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return nil, 0

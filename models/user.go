@@ -17,7 +17,7 @@ type User struct {
 func (u *User) Save(db *sql.DB) error {
 	stmt, err := db.Prepare(`
 		INSERT INTO
-		Users(Created, Email, Password)
+		users(Created, Email, Password)
 		VALUES(?, ?, ?)`)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (u *User) Save(db *sql.DB) error {
 }
 
 func UserByEmail(db *sql.DB, email string) (User, error) {
-	row := db.QueryRow("SELECT Id, Email, Password FROM Users WHERE Email = ?", email)
+	row := db.QueryRow("SELECT Id, Email, Password FROM users WHERE Email = ?", email)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
 
@@ -48,7 +48,7 @@ func UserByEmail(db *sql.DB, email string) (User, error) {
 }
 
 func UserById(db *sql.DB, id int64) (User, error) {
-	row := db.QueryRow("SELECT Id, Email, Password FROM Users WHERE Id = ?", id)
+	row := db.QueryRow("SELECT Id, Email, Password FROM users WHERE Id = ?", id)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
 
@@ -71,7 +71,7 @@ func NewUser(email, password string) User {
 // UserCount gets the number of users already in the database.
 func UserCount(db *sql.DB) int {
 	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM Users").Scan(&count)
+	err := db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
 	if err != nil {
 		return 0
 	}
