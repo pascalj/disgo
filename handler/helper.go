@@ -229,7 +229,10 @@ func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
 
 // Render a template.
 func render(w http.ResponseWriter, tmpl string, ctx map[string]interface{}, app *App) {
-	app.Templates[tmpl].Execute(w, ctx)
+	err := app.Templates[tmpl].Execute(w, ctx)
+	if err != nil {
+		renderErrors(w, map[string]string{"overall": "Internal server error."}, http.StatusInternalServerError)
+	}
 }
 
 // Load and build all templates and store them in the app struct.
