@@ -38,9 +38,7 @@ func GetComments(w http.ResponseWriter, req *http.Request, app *App) {
 		"comments": comments,
 	}
 
-	if len(comments) > 0 {
-		render(w, "partial/comments", ctx, app)
-	}
+	render(w, "partial/comments", ctx, app)
 }
 
 // ApproveComment allows admins to approve a comment by id.
