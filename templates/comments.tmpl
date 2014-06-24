@@ -3,14 +3,17 @@
     <input type="text" name="name" placeholder="Name" value="{{.name}}" required>
     <input type="text" name="email" placeholder="Email" value="{{.email}}" required>
     <textarea name="body" placeholder="Your comment" required></textarea>
+    {{if usesMarkdown}}
+      <small><a href="http://daringfireball.net/projects/markdown/">Markdown</a> is enabled.</small>
+    {{end}}
     <button>Comment</button>
     <input type="hidden" name="url" value="">
   </form>
 
   <div class="comments">
     {{range .comments}}
-    <div class="comment">
-      <div class="date">{{.Created | formatTime}}</div>
+    <div class="comment" id="disgo-comment-{{.Id}}">
+      <div class="date"><a href="#disgo-comment-{{.Id}}">{{.Created | formatTime}}</a></div>
       <div class="name">{{.Name}}</div>
       <img class="avatar" src="{{.Email | gravatar}}" alt=""/>
       {{if . | awaitingApproval}}
@@ -23,7 +26,7 @@
         {{if usesMarkdown}}
           {{.Body | markdown}}
         {{else}}
-          {{.Body}}
+          {{.Body | linebreak}}
         {{end}}
       </div>
     </div>

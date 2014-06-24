@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -74,6 +75,9 @@ func (app *App) viewhelpers() template.FuncMap {
 		"markdown": func(args ...string) template.HTML {
 			output := blackfriday.MarkdownCommon([]byte(args[0]))
 			return template.HTML(output)
+		},
+		"linebreak": func(args ...string) template.HTML {
+			return template.HTML(strings.Replace(args[0], "\n", "<br>", -1))
 		},
 		"times": func(args ...int) []struct{} {
 			return make([]struct{}, args[0])
