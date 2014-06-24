@@ -4,15 +4,15 @@
   function loadDisgo() {
     $each($('[data-disgo-url]'), function(el, i) {
       initializeComments(el)
-    });
+    })
   }
 
   function initializeComments(el) {
     var url = el.getAttribute('data-disgo-url')
     $ajax('GET', disgo.base + '/comments?url=' + encodeURIComponent(url), {}, {"Accept": "text/html"}, function(status, result, xhr) {
       if (status != 200) {
-        window.console && console.log('Error loading disgo: ' + xhr.status);
-        return;
+        window.console && console.log('Error loading disgo: ' + xhr.status)
+        return
       }
       el.innerHTML += result
       $1('[name=url]', el).setAttribute('value', url)
@@ -20,7 +20,13 @@
         e.preventDefault()
         submitComment(el)
       })
-    });
+      if (/^\#disgo-comment-[0-9]+$/.exec(document.location.hash)) {
+         setTimeout(function() {
+          $1(document.location.hash).scrollIntoView(false)
+          $addClass($1(document.location.hash), 'highlight')
+        }, 50)
+      }
+    })
   }
 
   function submitComment(el) {
@@ -37,7 +43,7 @@
         if (disgo.onSubmitError) {
           disgo.onSubmitError(status, result, xhr, form)
         } else {
-          var errors = JSON.parse(result);
+          var errors = JSON.parse(result)
           for (var error in errors) {
             var field = $1('[name=' + error + ']', el)
             if (field) $addClass(field, 'error')
@@ -50,6 +56,9 @@
       } else {
         form.body.value = ''
         $1('.comments', el).innerHTML += result
+        setTimeout(function() {
+          $1('.comments:last-child', el).scrollIntoView(false) }
+        , 50)
       }
     })
   }
@@ -73,39 +82,39 @@
 
   function $addClass(el, className) {
     if (el.classList) {
-      el.classList.add(className);
+      el.classList.add(className)
     } else {
-      el.className += ' ' + className;
+      el.className += ' ' + className
     }
   }
 
   function $removeClass(el, className) {
     if (el.classList) {
-      el.classList.remove(className);
+      el.classList.remove(className)
     } else {
-      el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
+      el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ')
     }
   }
 
   function $ajax(method, url, data, headers, handler) {
-    var invocation = createCorsRequest(method, url);
+    var invocation = createCorsRequest(method, url)
     if (invocation == null) {
       return
     }
-    var dataString = '';
+    var dataString = ''
     for(field in data) {
       dataString += field + '=' + encodeURIComponent(data[field]) + '&'
     }
 
-    invocation.withCredentials = true;
+    invocation.withCredentials = true
     invocation.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded')
     for (headerName in headers) {
       invocation.setRequestHeader(headerName, headers[headerName])
     }
     invocation.onload = function() {
-      handler(invocation.status, invocation.responseText, invocation);
+      handler(invocation.status, invocation.responseText, invocation)
     }
-    invocation.send(dataString);
+    invocation.send(dataString)
   }
 
   // thanks, microsoft
@@ -121,10 +130,10 @@
       }
     } else {
       // CORS unavailible
-      xhr = null;
+      xhr = null
     }
     return xhr
   }
 
   window[addEventListener ? 'addEventListener' : 'attachEvent'](addEventListener ? 'load' : 'onload', loadDisgo)
-})(this);
+})(this)

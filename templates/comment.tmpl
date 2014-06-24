@@ -1,5 +1,5 @@
-<div class="comment">
-  <div class="date">{{.comment.Created | formatTime}}</div>
+<div class="comment" id="disgo-comment-{{.comment.Id}}">
+  <div class="date"><a href="#disgo-comment-{{.comment.Id}}">{{.comment.Created | formatTime}}</a></div>
   <div class="name">{{.comment.Name}}</div>
   <img class="avatar" src="{{.comment.Email | gravatar}}" alt=""/>
   {{if .comment | awaitingApproval}}
