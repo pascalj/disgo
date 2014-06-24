@@ -15,7 +15,6 @@ var (
 	cfg        models.Config
 	cfgPath    string
 	importPath string
-	help       bool
 	app        *handler.App
 )
 
@@ -41,7 +40,10 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
-	http.ListenAndServe(host+":"+port, nil)
+	err = http.ListenAndServe(host+":"+port, nil)
+	if err != nil {
+		log.Fatal("Unable to start Disgo:", err)
+	}
 }
 
 func checkErr(err error, description string) {
