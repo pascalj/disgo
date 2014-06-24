@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>disgo demo</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link media="screen" rel="stylesheet" type="text/css" href="foundation.min.css">
+
+        <style media="screen" type="text/css">
+            h1 {
+                font-size: 25px;
+            }
+            h1 img{
+                width: 40px;
+                height: 40px;
+            }
+            .button-group, .button-group .button {
+                width: 100%;
+            }
+             .button-group li {
+                width: 50%;
+             }
+            .content {
+                max-width: 700px;
+                margin: 0 auto;
+            }
+            .disgo-wrapper label, .disgo-wrapper input, .disgo-wrapper textarea {
+                display: block;
+                font-size: 14px;
+                margin: 10px 0;
+                border: none;
+                background-color: #f5f5f5;
+            }
+            .disgo-wrapper input {
+                padding: 15px;
+                width: 48%;
+                outline: none;
+                float: left;
+            }
+            .disgo-wrapper input:first-child {
+                margin-right: 4%;
+            }
+            .disgo-wrapper input.error {
+                background-color: #fdd;
+            }
+            .disgo-wrapper textarea.error {
+                background-color: #fdd;
+            }
+            .disgo-wrapper textarea {
+                padding: 15px;
+                width: 100%;
+                height: 200px;
+                outline: none;
+                clear: both;
+            }
+            .disgo-wrapper button {
+                float: right;
+            }
+            .disgo-wrapper .comment {
+                clear: both;
+                padding-bottom: 20px;
+            }
+            .disgo-wrapper .comment:not(:first-child) {
+                border-top: 1px solid #eee;
+                padding-top: 20px;
+            }
+            .disgo-wrapper .name, .disgo-wrapper .date {
+                color: #555;
+            }
+            .disgo-wrapper .name {
+                margin-bottom: 15px;
+            }
+            .disgo-wrapper .date {
+                float: right;
+                font-size: 12px;
+            }
+            .disgo-wrapper .avatar {
+                float: left;
+                margin: 0 10px 10px 0;
+                width: 50px;
+            }
+            .comment.highlight {
+                background: #FFFFED;
+            }
+            .comment:before,
+            .comment:after {
+                content: " ";
+                display: table;
+            }
+            .comment:after {
+                clear: both;
+            }
+            footer {
+                font-size: 12px;
+                margin: 15px 0;
+            }
+        </style>
+    </head>
+    <body>
+      <div class="content">
+
+        <h1><img src="disgo_bk.svg" alt=""> Disgo</h1>
+        <p><strong>Disgo is a simple commenting system for the web, written in Go. It is inspired by <a href="http://disqus.com">Disqus</a> but does not come with all the bells and whistles.</strong> Some (anti-)features are:</p>
+
+        <ul>
+            <li>Ajax-based: no Iframes</li>
+            <li>no Javascript dependency, especially not jQuery</li>
+            <li>works on all <a href="http://caniuse.com/cors">modern browsers</a> and Internet Explorer >=10</li>
+            <li>supports MySQL and PostgreSQL</li>
+            <li>customizable CSS (in fact, there is currently no default client CSS)</li>
+        </ul>
+
+        Optional:
+
+        <ul>
+            <li>admin approval of new comments</li>
+            <li>e-mail notification on new comments</li>
+            <li>IP address-based rate limiting</li>
+            <li>markdown support</li>
+            <li>Disqus import</li>
+        </ul>
+        <p>
+            <ul class="button-group">
+                <li><a class="button success" href="https://github.com/pascalj/disgo/releases">Download</a></li>
+                <li><a class="button secondary" href="https://github.com/pascalj/disgo">Source <small>on Github</small></a></li>
+            </ul>
+        </p>
+
+        <p>
+            Here's what the admin interface looks like:
+        </p>
+        <p>
+            <img src="http://pascalj.github.io/disgo.png" alt="Admin interface">
+        </p>
+
+
+        <h3>Demo</h3>
+        <div data-disgo-url="http://pascalj.github.io/disgo"></div>
+
+        <footer><a href="http://github.com/pascalj/disgo">Disgo</a> by <a href="http://www.pascalj.de">Pascal Jungblut</a> — MIT licence</footer>
+    </div>
+<script>
+var disgo = {
+    base: 'http://comments.pascalj.de'
+}
+document.write('<script src="' + disgo.base + '/js/disgo.js">\x3C/script>')
+</script>
+<a href="https://github.com/pascalj/disgo"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+    </body>
+</html>
