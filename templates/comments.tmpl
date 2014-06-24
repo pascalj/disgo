@@ -1,7 +1,7 @@
 <div class="disgo-wrapper">
   <form class="comments-form">
     <input type="text" name="name" placeholder="Name" value="{{.name}}" required>
-    <input type="text" name="email" placeholder="Email" value="{{.email}}" required>
+    <input type="email" name="email" placeholder="Email" value="{{.email}}" required>
     <textarea name="body" placeholder="Your comment" required></textarea>
     {{if usesMarkdown}}
       <small><a href="http://daringfireball.net/projects/markdown/">Markdown</a> is enabled.</small>

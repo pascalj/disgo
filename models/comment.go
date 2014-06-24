@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ungerik/go-gravatar"
+	"net/mail"
 	"time"
 )
 
@@ -57,8 +58,8 @@ func (c *Comment) MarshalJSON() ([]byte, error) {
 
 func (c *Comment) Validate() (bool, map[string]string) {
 	errors := map[string]string{}
-	if c.Email == "" {
-		errors["email"] = "Email address is required."
+	if _, err := mail.ParseAddress(c.Email); err != nil {
+		errors["email"] = "A valid Email address is required."
 	}
 	if c.Name == "" {
 		errors["name"] = "Name is required."
