@@ -49,7 +49,7 @@ The various switches in the [configuration sample file](disgo.gcfg.sample) are d
 
 Two things are mandatory:
 
-A database must be configured, either MySQL or PostgreSQL and you need to set at least one `origin`. An origin is a URL where you want to allow comments. It may contain `*` as a wildcard. You can tell disgo to load a specific config by providing the `-config` command line parameter. It is strongly suggested to change the `secret`.
+A database must be configured, either MySQL or PostgreSQL and you need to set at least one `origin`. An origin is a URL where you want to allow comments. You can tell disgo to load a specific config by providing the `-config` command line parameter. It is strongly suggested to change the `secret`.
 
 The server will listen on `0.0.0.0:3000`. You can change that by setting the `HOST` and/or `PORT` environment variable.
 
