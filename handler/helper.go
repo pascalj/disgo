@@ -77,7 +77,7 @@ func (app *App) viewhelpers() template.FuncMap {
 			return template.HTML(output)
 		},
 		"linebreak": func(args ...string) template.HTML {
-			return template.HTML(strings.Replace(args[0], "\n", "<br>", -1))
+			return template.HTML(strings.Replace(template.HTMLEscapeString(args[0]), "\n", "<br>", -1))
 		},
 		"times": func(args ...int) []struct{} {
 			return make([]struct{}, args[0])
