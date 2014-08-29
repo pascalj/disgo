@@ -6,5 +6,7 @@ go:
  - release
  - tip
 
+install:
+ - go get -v
 script:
  - go test -v ./...
