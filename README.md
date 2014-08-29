@@ -1,4 +1,4 @@
-# Disgo
+# Disgo [![Build Status](https://travis-ci.org/pascalj/disgo.svg?branch=master)](https://travis-ci.org/pascalj/disgo)
 
 Disgo is a simple commenting system for the web, written in Go. It is inspired by [Disqus](http://disqus.com) but does not come with all the bells and whistles. Some (anti-)features are:
 
