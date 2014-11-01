@@ -1,0 +1,15 @@
+{
+  "name": "garethr-golang",
+  "version": "0.1.1",
+  "author": "Gareth Rushgrove",
+  "summary": "Module for installing go from the JuJu PPA",
+  "license": "Apache License, Version 2.0",
+  "source": "git://github.com/garethr/garethr-golang.git",
+  "project_page": "https://github.com/garethr/garethr-golang",
+  "issues_url": "https://github.com/garethr/garethr-golang/issues",
+  "description": "Install one of the official golang packages",
+  "dependencies": [
+    {"name":"puppetlabs/apt","version_requirement":">= 1.1.0"},
+    {"name":"puppetlabs/stdlib","version_requirement":">=3.2.0"}
+  ]
+}

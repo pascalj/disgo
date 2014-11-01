@@ -1,0 +1,14 @@
+{
+  "Gemfile": "595fbf14721df13e255d9aca0d3454fb",
+  "Gemfile.lock": "77b966f7670b4f9ac24cb91e266829f0",
+  "LICENSE": "e7fff5d8ca4f44f1279782ead2da5925",
+  "Modulefile": "cc3fb6722da4f10e5a22e428517b9618",
+  "README.md": "7491fb92239b5dafb4fcbc9694c57f6b",
+  "Rakefile": "a98b55f4dff239db6e4ab16bbe795a0b",
+  "manifests/init.pp": "b9000b5715ed17b5b7d7dba976227d61",
+  "spec/classes/golang_spec.rb": "67685b3d4df4763a13a034c02f51caf1",
+  "spec/spec_helper.rb": "0db89c9a486df193c0e40095422e19dc",
+  "spec/spec_helper_system.rb": "82b0186bda00427e1308bf1f63defdb5",
+  "spec/system/golang_spec.rb": "c5f3ee6c4f812f335b9a6a73fb8374a3",
+  "tests/base.pp": "77f0e36d05f3c3e5e8c0141755073d72"
+}

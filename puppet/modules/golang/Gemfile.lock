@@ -1,0 +1,167 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    CFPropertyList (2.2.8)
+    addressable (2.3.6)
+    backports (3.6.0)
+    builder (3.2.2)
+    coderay (1.1.0)
+    diff-lcs (1.2.5)
+    ethon (0.7.1)
+      ffi (>= 1.3.0)
+    excon (0.39.4)
+    facter (2.1.0)
+      CFPropertyList (~> 2.2.6)
+    faraday (0.9.0)
+      multipart-post (>= 1.2, < 3)
+    faraday_middleware (0.9.1)
+      faraday (>= 0.7.4, < 0.10)
+    ffi (1.9.3)
+    fog (1.23.0)
+      fog-brightbox
+      fog-core (~> 1.23)
+      fog-json
+      fog-softlayer
+      ipaddress (~> 0.5)
+      nokogiri (~> 1.5, >= 1.5.11)
+    fog-brightbox (0.2.0)
+      fog-core (~> 1.22)
+      fog-json
+      inflecto
+    fog-core (1.23.0)
+      builder
+      excon (~> 0.38)
+      formatador (~> 0.2)
+      mime-types
+      net-scp (~> 1.1)
+      net-ssh (>= 2.1.3)
+    fog-json (1.0.0)
+      multi_json (~> 1.0)
+    fog-softlayer (0.3.13)
+      fog-core
+      fog-json
+    formatador (0.2.5)
+    gh (0.13.2)
+      addressable
+      backports
+      faraday (~> 0.8)
+      multi_json (~> 1.0)
+      net-http-persistent (>= 2.7)
+      net-http-pipeline
+    hiera (1.3.4)
+      json_pure
+    highline (1.6.21)
+    inflecto (0.0.2)
+    ipaddress (0.8.0)
+    json (1.8.1)
+    json_pure (1.8.1)
+    kwalify (0.7.2)
+    launchy (2.4.2)
+      addressable (~> 2.3)
+    metaclass (0.0.4)
+    method_source (0.8.2)
+    mime-types (1.25.1)
+    mocha (1.1.0)
+      metaclass (~> 0.0.1)
+    multi_json (1.10.1)
+    multipart-post (2.0.0)
+    net-http-persistent (2.9.4)
+    net-http-pipeline (1.0.1)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.9.1)
+    netrc (0.7.7)
+    nokogiri (1.5.11)
+    pry (0.9.12.6)
+      coderay (~> 1.0)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+    puppet (3.6.2)
+      facter (> 1.6, < 3)
+      hiera (~> 1.0)
+      json_pure
+      rgen (~> 0.6.5)
+    puppet-blacksmith (2.3.1)
+      nokogiri
+      puppet (>= 2.7.16)
+      rest-client
+    puppet-lint (0.3.2)
+    puppet-syntax (1.3.0)
+      rake
+    puppetlabs_spec_helper (0.8.0)
+      mocha
+      puppet-lint
+      puppet-syntax
+      rake
+      rspec
+      rspec-puppet
+    pusher-client (0.6.0)
+      json
+      websocket (~> 1.0)
+    rake (10.3.2)
+    rbvmomi (1.8.1)
+      builder
+      nokogiri (>= 1.4.1)
+      trollop
+    rest-client (1.7.2)
+      mime-types (>= 1.16, < 3.0)
+      netrc (~> 0.7)
+    rgen (0.6.6)
+    rspec (2.99.0)
+      rspec-core (~> 2.99.0)
+      rspec-expectations (~> 2.99.0)
+      rspec-mocks (~> 2.99.0)
+    rspec-core (2.99.1)
+    rspec-expectations (2.99.2)
+      diff-lcs (>= 1.1.3, < 2.0)
+    rspec-mocks (2.99.2)
+    rspec-puppet (1.0.1)
+      rspec
+    rspec-system (2.8.0)
+      fog (~> 1.18)
+      kwalify (~> 0.7.2)
+      mime-types (~> 1.16)
+      net-scp (~> 1.1)
+      net-ssh (~> 2.7)
+      nokogiri (~> 1.5.10)
+      rbvmomi (~> 1.6)
+      rspec (~> 2.14)
+      systemu (~> 2.5)
+    rspec-system-puppet (2.2.1)
+      rspec-system (~> 2.0)
+    slop (3.6.0)
+    systemu (2.6.4)
+    travis (1.7.1)
+      addressable (~> 2.3)
+      backports
+      faraday (~> 0.9)
+      faraday_middleware (~> 0.9, >= 0.9.1)
+      gh (~> 0.13)
+      highline (~> 1.6)
+      launchy (~> 2.1)
+      pry (~> 0.9, < 0.10)
+      pusher-client (~> 0.4)
+      typhoeus (~> 0.6, >= 0.6.8)
+    travis-lint (2.0.0)
+      json
+    trollop (2.0)
+    typhoeus (0.6.9)
+      ethon (>= 0.7.1)
+    vagrant-wrapper (1.2.1.1)
+    websocket (1.2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  puppet (~> 3.6.0)
+  puppet-blacksmith
+  puppet-lint
+  puppet-syntax
+  puppetlabs_spec_helper
+  rake
+  rspec-puppet (~> 1.0.0)
+  rspec-system-puppet
+  travis
+  travis-lint
+  vagrant-wrapper
