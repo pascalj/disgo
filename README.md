@@ -123,4 +123,4 @@ $ disgo -import path/to/disqus.xml
 
 ## Contributing
 
-Any feedback is welcome. If you have features/suggestions, please add them to the [Trello board](https://trello.com/b/HU7Vc3NT/disgo) or drop me a mail. If you find a bug, please open an issue on Github. Of course I'm happy to merge pull requests.
+Any feedback is welcome. If you have features/suggestions, please add them to the [Trello board](https://trello.com/b/HU7Vc3NT/disgo) or drop me a mail. If you find a bug, please open an issue on Github. Of course I'm happy to merge pull requests. Disgo uses [Vagrant](https://www.vagrantup.com) to provide a stable environment for development.
