@@ -5,3 +5,4 @@ disgo.gcfg
 *.sqlite3
 build/
 golang-crosscompile/
+.vagrant
