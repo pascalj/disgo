@@ -5,7 +5,12 @@
   $('#database').on('change', function() {
     $('#sqlite, #postgresql, #mysql').removeClass('active');
     $('#' + selectedDb()).addClass('active');
-    validateDatabase()
+    validateDatabase();
+  })
+
+  $('#finish').on('click', function(e) {
+    e.preventDefault();
+    setDatabase();
   })
 
   var validateTimer;
@@ -15,6 +20,39 @@
   })
 
   function validateDatabase() {
+    var data = {};
+
+    switch (selectedDb()) {
+      case 'sqlite':
+        data.path = $('#sqlite input').val();
+        break;
+      case 'postgresql':
+        data = getData($('#postgresql'));
+        break;
+      case 'mysql':
+        data = getData($('#mysql'));
+        break;
+    }
+
+    data.driver = selectedDb();
+
+    $.ajax({
+      url: '/setup/database',
+      data: data,
+      success: function(data) {
+        if (data == true) {
+          $('#finish').addClass('success').attr('disabled', false);
+          $('.wrong-data').hide();
+        } else {
+          $('#finish').removeClass('success').attr('disabled', true)
+          $('.wrong-data').show();
+        }
+      },
+    });
+  }
+
+  function setDatabase() {
+    $('#finish').attr('disabled', true);
     var data = {};
 
     switch (selectedDb()) {
@@ -34,14 +72,12 @@
     $.ajax({
       url: '/setup/database',
       data: data,
+      type: 'POST',
       success: function(data) {
-        console.log(data)
         if (data == true) {
-          $('#finish').addClass('success').attr('disabled', false);
-          $('.wrong-data').hide();
+          setTimeout('window.location.href=window.location.href', 500)
         } else {
-          $('#finish').removeClass('success').attr('disabled', true)
-          $('.wrong-data').show();
+          $('#finish').attr('disabled', false);
         }
       },
     });

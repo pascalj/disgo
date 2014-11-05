@@ -8,14 +8,26 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
 	"net/http"
 	"os"
 )
 
+type dbConfig struct {
+	Driver   string
+	Host     string
+	Port     string
+	Username string
+	Password string
+	Database string
+	Path     string
+}
+
 func Setup(cfgPath string) {
 	router := mux.NewRouter()
-	router.HandleFunc("/setup/database", TestDatabase).Methods("GET")
-	// router.Handle("/setup/database", CreateComment).Methods("POST")
+	router.HandleFunc("/setup/database", testDatabase).Methods("GET")
+	router.HandleFunc("/setup/database", writeConfigHandler(cfgPath)).Methods("POST")
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public/setup/")))
 	http.Handle("/", router)
 	host := os.Getenv("HOST")
@@ -26,35 +38,79 @@ func Setup(cfgPath string) {
 	http.ListenAndServe(host+":"+port, nil)
 }
 
-// CheckDatabase tries to connect to the database
-func TestDatabase(w http.ResponseWriter, req *http.Request) {
+// testDatabase tries to connect to the database
+func testDatabase(w http.ResponseWriter, req *http.Request) {
 	qry := req.URL.Query()
-	driver, host, port := qry.Get("driver"), qry.Get("host"), qry.Get("port")
-	user, password, database := qry.Get("username"), qry.Get("password"), qry.Get("database")
-	path := qry.Get("path")
-
-	var valid bool
-	switch driver {
-	case "sqlite":
-		valid = validateSqlite(path)
-	case "postgresql":
-		valid = validatePostgresql(host, port, user, password, database)
-	case "mysql":
-		valid = validateMysql(host, port, user, password, database)
+	cfg := dbConfig{
+		qry.Get("driver"),
+		qry.Get("host"),
+		qry.Get("port"),
+		qry.Get("username"),
+		qry.Get("password"),
+		qry.Get("database"),
+		qry.Get("path"),
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-	out, _ := json.Marshal(valid)
+	out, _ := json.Marshal(validateDatabase(cfg))
 	w.Write(out)
 }
 
-func validateSqlite(path string) bool {
+// setDatabase writes the minimal config file to disk
+func writeConfigHandler(cfgPath string) func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		cfg := dbConfig{
+			req.FormValue("driver"),
+			req.FormValue("host"),
+			req.FormValue("port"),
+			req.FormValue("username"),
+			req.FormValue("password"),
+			req.FormValue("database"),
+			req.FormValue("path"),
+		}
+		if validateDatabase(cfg) {
+			if err := writeConfig(cfgPath, cfg); err == nil {
+				out, _ := json.Marshal(true)
+				w.Write(out)
+			} else {
+				out, _ := json.Marshal(err.Error())
+				w.Write(out)
+			}
+		} else {
+			out, _ := json.Marshal("Invalid credentials.")
+			w.Write(out)
+		}
+	}
+}
+
+func writeConfig(cfgPath string, cfg dbConfig) error {
+	cfgYaml, err := yaml.Marshal(map[string]dbConfig{"database": cfg})
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(cfgPath, cfgYaml, 0644)
+}
+
+func validateDatabase(cfg dbConfig) bool {
+	switch cfg.Driver {
+	case "sqlite":
+		return validateSqlite(cfg)
+	case "postgresql":
+		return validatePostgresql(cfg)
+	case "mysql":
+		return validateMysql(cfg)
+	default:
+		return false
+	}
+}
+
+func validateSqlite(cfg dbConfig) bool {
 	return true
 }
 
-func validatePostgresql(host, port, user, password, database string) bool {
+func validatePostgresql(cfg dbConfig) bool {
 	db, err := sqlx.Connect("postgres",
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, database, password))
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Password))
 	if err != nil {
 		return false
 	}
@@ -64,9 +120,9 @@ func validatePostgresql(host, port, user, password, database string) bool {
 	return true
 }
 
-func validateMysql(host, port, user, password, database string) bool {
+func validateMysql(cfg dbConfig) bool {
 	db, err := sqlx.Connect("mysql",
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, database, password))
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Password))
 	if err != nil {
 		return false
 	}
