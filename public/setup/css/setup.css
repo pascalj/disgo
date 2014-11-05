@@ -1,0 +1,64 @@
+html {
+    position: relative;
+    min-height: 100%;
+    height: auto;
+}
+body {
+    padding: 0 0 30px;
+    height: auto;
+    position: static;
+}
+footer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 30px;
+    width: 100%;
+    text-align: center;
+    padding-top: 10px;
+    font-size: 12px;
+}
+.top-bar h1 img {
+  height: 40px;
+}
+
+
+.comment .button-group {
+  float: right;
+}
+
+.comment .button-group form, .comment .button-group form .button {
+  margin-bottom: 0;
+}
+
+.comment .approved {
+  margin-top: 10px;
+}
+
+.comment .comment-text {
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.comment .email, .comment .date, .comment .url, .comment .client-ip {
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.pagination {
+  text-align: center;
+}
+
+#mysql, #postgresql, #sqlite {
+  display: none;
+}
+
+#mysql.active, #postgresql.active, #sqlite.active {
+  display: block;
+}
+
+p {
+  margin-top: 15px;
+}

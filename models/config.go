@@ -1,7 +1,9 @@
 package models
 
 import (
-	"code.google.com/p/gcfg"
+	"io/ioutil"
+
+	"gopkg.in/yaml.v2"
 )
 
 // Config represents the user's config that's read from a gcfg file.
@@ -37,6 +39,10 @@ type Config struct {
 // LoadConfig loads the config from disc and outputs an error if the file could no be read.
 func LoadConfig(path string) (Config, error) {
 	var cfg Config
-	err := gcfg.ReadFileInto(&cfg, path)
+	configFile, err := ioutil.ReadFile(path)
+	if err != nil {
+		return cfg, err
+	}
+	err = yaml.Unmarshal(configFile, &cfg)
 	return cfg, err
 }

@@ -19,12 +19,15 @@ var (
 )
 
 func init() {
-	flag.StringVar(&cfgPath, "config", "disgo.gcfg", "path to the config file")
+	flag.StringVar(&cfgPath, "config", "disgo.yml", "path to the config file")
 	flag.StringVar(&importPath, "import", "", "Disqus XML file to import")
 	flag.Parse()
 }
 
 func main() {
+	if _, err := os.Stat(cfgPath); err != nil {
+		handler.Setup(cfgPath)
+	}
 	app, err := handler.NewApp(cfgPath)
 	checkErr(err, "Unable to start Disgo:")
 	if importPath != "" {

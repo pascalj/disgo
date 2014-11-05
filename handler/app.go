@@ -31,9 +31,11 @@ func NewApp(cfgPath string) (*App, error) {
 
 // Setup the app. Loads the config, parses templates, connects to DB.
 func (app *App) setup(cfgPath string) error {
-	if err := app.LoadConfig(cfgPath); err != nil {
+	cfg, err := models.LoadConfig(cfgPath)
+	if err != nil {
 		return err
 	}
+	app.Config = cfg
 	if err := app.ConnectDb(); err != nil {
 		return err
 	}
@@ -43,16 +45,6 @@ func (app *App) setup(cfgPath string) error {
 	app.SetRoutes()
 	app.InitSession()
 	app.Notifier = &service.Notifier{app.Config}
-	return nil
-}
-
-// Load the config.
-func (app *App) LoadConfig(path string) error {
-	cfg, err := models.LoadConfig(path)
-	if err != nil {
-		return err
-	}
-	app.Config = cfg
 	return nil
 }
 

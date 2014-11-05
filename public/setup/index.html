@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Disgo - Setup</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="css/foundation.min.css">
+        <link rel="stylesheet" href="css/setup.css">
+        </style>
+    </head>
+    <body>
+        <nav class="top-bar" data-topbar>
+          <ul class="title-area">
+            <li class="name">
+              <h1><a href="admin"><img src="img/disgo.svg" alt=""> Disgo</a></h1>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="row">
+            <div class="large-6 columns">
+              <p>Welcome to Disgo! This form will help you to setup your database connection. Choose "SQLite" if you are unsure.</p>
+              <form>
+                <fieldset>
+                  <legend>Database setup</legend>
+                  <div class="row">
+                    <div class="large-12 columns">
+                      <label>Database type
+                        <select id="database">
+                          <option value="sqlite">SQLite</option>
+                          <option value="postgresql">PostgreSQL</option>
+                          <option value="mysql">MySQL</option>
+                        </select>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="row wrong-data">
+                    <div class="large-6 columns">
+                      <div data-alert class="alert-box warning">
+                        Could not connect to the database. Please check the data below.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="sqlite">
+                    <h6>SQLite Setup</h6>
+                    <div class="row">
+                      <div class="large-12 columns">
+                        <label>Path
+                          <input type="text" class="path" placeholder="disgo.sqlite" />
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="postgresql">
+                    <h6>PostgreSQL Setup</h6>
+                    <div class="row">
+                      <div class="large-4 columns">
+                        <label>Host
+                          <input type="text"  class="host" placeholder="127.0.0.1" />
+                        </label>
+                      </div>
+                      <div class="large-2 columns">
+                        <label>Port
+                          <input type="text"  class="port" placeholder="5432" />
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="large-3 columns">
+                        <label>Username
+                          <input  class="username" type="text"/>
+                        </label>
+                      </div>
+                      <div class="large-3 columns">
+                        <label>Password
+                          <input  class="password" type="password" />
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="large-6 columns">
+                        <label>Database name
+                          <input  class="database" type="text"/>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="mysql">
+                    <h6>MySQL Setup</h6>
+                    <div class="row">
+                      <div class="large-4 columns">
+                        <label>Host
+                          <input type="text" class="host" placeholder="127.0.0.1" />
+                        </label>
+                      </div>
+                      <div class="large-2 columns">
+                        <label>Port
+                          <input  class="port" type="text" placeholder="3306" />
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="large-3 columns">
+                        <label>Username
+                          <input class="username" type="text"/>
+                        </label>
+                      </div>
+                      <div class="large-3 columns">
+                        <label>Password
+                          <input  class="password" type="password" />
+                        </label>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="large-6 columns">
+                        <label>Database name
+                          <input  class="database" type="text"/>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="large-6 columns">
+                      <button id="finish" class="right radius" disabled>Finish</button>
+                    </div>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+        </div>
+
+        <footer>
+          <a href="http://github.com/pascalj/disgo">Disgo</a> by <a href="http://www.pascalj.de">Pascal Jungblut</a> — MIT licence
+        </footer>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/setup.js"></script>
+    </body>
+</html>
