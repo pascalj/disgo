@@ -3,7 +3,7 @@
   validateDatabase();
 
   $('#database').on('change', function() {
-    $('#sqlite, #postgresql, #mysql').removeClass('active');
+    $('#sqlite3, #postgresql, #mysql').removeClass('active');
     $('#' + selectedDb()).addClass('active');
     validateDatabase();
   })
@@ -23,8 +23,8 @@
     var data = {};
 
     switch (selectedDb()) {
-      case 'sqlite':
-        data.path = $('#sqlite input').val();
+      case 'sqlite3':
+        data.path = $('#sqlite3 input').val();
         break;
       case 'postgresql':
         data = getData($('#postgresql'));
@@ -56,8 +56,8 @@
     var data = {};
 
     switch (selectedDb()) {
-      case 'sqlite':
-        data.path = $('#sqlite input').val()
+      case 'sqlite3':
+        data.path = $('#sqlite3 input').val()
         break;
       case 'postgresql':
         data = getData($('#postgresql'));

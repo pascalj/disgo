@@ -37,13 +37,12 @@ func main() {
 		service.Import(app.Db, reader)
 		return
 	}
-	http.Handle("/", app.Router)
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
 	}
-	err = http.ListenAndServe(host+":"+port, nil)
+	err = http.ListenAndServe(host+":"+port, app.Router)
 	if err != nil {
 		log.Fatal("Unable to start Disgo:", err)
 	}

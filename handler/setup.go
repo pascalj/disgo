@@ -10,9 +10,12 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 )
+
+var listener net.Listener
 
 type dbConfig struct {
 	Driver   string
@@ -29,13 +32,17 @@ func Setup(cfgPath string) {
 	router.HandleFunc("/setup/database", testDatabase).Methods("GET")
 	router.HandleFunc("/setup/database", writeConfigHandler(cfgPath)).Methods("POST")
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("public/setup/")))
-	http.Handle("/", router)
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
 	}
-	http.ListenAndServe(host+":"+port, nil)
+	var err error
+	listener, err = net.Listen("tcp", host+":"+port)
+	if err != nil {
+		return
+	}
+	http.Serve(listener, router)
 }
 
 // testDatabase tries to connect to the database
@@ -70,8 +77,10 @@ func writeConfigHandler(cfgPath string) func(w http.ResponseWriter, req *http.Re
 		}
 		if validateDatabase(cfg) {
 			if err := writeConfig(cfgPath, cfg); err == nil {
+				// success writing the config
 				out, _ := json.Marshal(true)
 				w.Write(out)
+				listener.Close()
 			} else {
 				out, _ := json.Marshal(err.Error())
 				w.Write(out)
@@ -93,8 +102,8 @@ func writeConfig(cfgPath string, cfg dbConfig) error {
 
 func validateDatabase(cfg dbConfig) bool {
 	switch cfg.Driver {
-	case "sqlite":
-		return validateSqlite(cfg)
+	case "sqlite3":
+		return validateSqlite3(cfg)
 	case "postgresql":
 		return validatePostgresql(cfg)
 	case "mysql":
@@ -104,7 +113,7 @@ func validateDatabase(cfg dbConfig) bool {
 	}
 }
 
-func validateSqlite(cfg dbConfig) bool {
+func validateSqlite3(cfg dbConfig) bool {
 	return true
 }
 

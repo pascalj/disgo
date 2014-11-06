@@ -6,9 +6,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/pascalj/disgo/models"
 	"github.com/pascalj/disgo/service"
 	"html/template"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -91,11 +93,12 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	app.Db = db
-	for _, statement := range sqlCreate {
-		_, err = db.Exec(statement)
-		if err != nil {
-			return err
-		}
+	statements, err := ioutil.ReadFile("data/sql/schema." + app.Config.Database.Driver + ".sql")
+	if err != nil {
+		return err
+	}
+	if _, err := db.Exec(string(statements)); err != nil {
+		return err
 	}
 	return nil
 }
