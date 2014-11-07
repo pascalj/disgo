@@ -13,9 +13,11 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 )
 
-var listener net.Listener
+var listener *net.TCPListener
+var closer chan bool
 
 type dbConfig struct {
 	Driver   string
@@ -27,7 +29,8 @@ type dbConfig struct {
 	Path     string
 }
 
-func Setup(cfgPath string) {
+func Setup(cfgPath string) error {
+	closer = make(chan bool)
 	router := mux.NewRouter()
 	router.HandleFunc("/setup/database", testDatabase).Methods("GET")
 	router.HandleFunc("/setup/database", writeConfigHandler(cfgPath)).Methods("POST")
@@ -37,12 +40,25 @@ func Setup(cfgPath string) {
 	if port == "" {
 		port = "3000"
 	}
-	var err error
-	listener, err = net.Listen("tcp", host+":"+port)
-	if err != nil {
-		return
+
+	server := &http.Server{
+		Handler:      router,
+		ReadTimeout:  time.Second * 5,
+		WriteTimeout: time.Second * 5,
 	}
-	http.Serve(listener, router)
+
+	server.SetKeepAlivesEnabled(false)
+	addr, err := net.ResolveTCPAddr("tcp", host+":"+port)
+	listener, err = net.ListenTCP("tcp", addr)
+	if err != nil {
+		return err
+	}
+	go func() {
+		<-closer
+		listener.Close()
+	}()
+	server.Serve(listener)
+	return nil
 }
 
 // testDatabase tries to connect to the database
@@ -80,7 +96,7 @@ func writeConfigHandler(cfgPath string) func(w http.ResponseWriter, req *http.Re
 				// success writing the config
 				out, _ := json.Marshal(true)
 				w.Write(out)
-				listener.Close()
+				closer <- true
 			} else {
 				out, _ := json.Marshal(err.Error())
 				w.Write(out)
