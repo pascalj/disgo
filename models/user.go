@@ -2,7 +2,7 @@ package models
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"time"
 )
 
@@ -14,7 +14,7 @@ type User struct {
 	Password string `binding:"required" form:"password"`
 }
 
-func (u *User) Save(db *sql.DB) error {
+func (u *User) Save(db *sqlx.DB) error {
 	stmt, err := db.Prepare(`
 		INSERT INTO
 		users(Created, Email, Password)
@@ -36,7 +36,7 @@ func (u *User) Save(db *sql.DB) error {
 	return nil
 }
 
-func UserByEmail(db *sql.DB, email string) (User, error) {
+func UserByEmail(db *sqlx.DB, email string) (User, error) {
 	row := db.QueryRow("SELECT Id, Email, Password FROM users WHERE Email = ?", email)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
@@ -47,7 +47,7 @@ func UserByEmail(db *sql.DB, email string) (User, error) {
 	return user, nil
 }
 
-func UserById(db *sql.DB, id int64) (User, error) {
+func UserById(db *sqlx.DB, id int64) (User, error) {
 	row := db.QueryRow("SELECT Id, Email, Password FROM users WHERE Id = ?", id)
 	user := User{}
 	err := row.Scan(&user.Id, &user.Email, &user.Password)
@@ -69,7 +69,7 @@ func NewUser(email, password string) User {
 }
 
 // UserCount gets the number of users already in the database.
-func UserCount(db *sql.DB) int {
+func UserCount(db *sqlx.DB) int {
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM users").Scan(&count)
 	if err != nil {

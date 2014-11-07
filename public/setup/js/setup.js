@@ -75,7 +75,7 @@
       type: 'POST',
       success: function(data) {
         if (data == true) {
-          setTimeout('window.location.href=window.location.href', 500)
+          setTimeout('window.location.href=window.location.href+"?reload=true"', 500)
         } else {
           $('#finish').attr('disabled', false);
         }

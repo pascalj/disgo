@@ -1,10 +1,10 @@
 package service
 
 import (
-	"database/sql"
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/kennygrant/sanitize"
 	"github.com/pascalj/disgo/models"
 	"io"
@@ -42,7 +42,7 @@ type threadRef struct {
 	Id string `xml:"http://disqus.com/disqus-internals id,attr"`
 }
 
-func Import(db *sql.DB, xmlReader io.Reader) error {
+func Import(db *sqlx.DB, xmlReader io.Reader) error {
 	parsed := &disqus{}
 	decoder := xml.NewDecoder(xmlReader)
 	if err := decoder.Decode(parsed); err != nil {

@@ -64,7 +64,7 @@ func Setup(cfgPath string) error {
 // testDatabase tries to connect to the database
 func testDatabase(w http.ResponseWriter, req *http.Request) {
 	qry := req.URL.Query()
-	cfg := dbConfig{
+	cfg := &dbConfig{
 		qry.Get("driver"),
 		qry.Get("host"),
 		qry.Get("port"),
@@ -82,7 +82,7 @@ func testDatabase(w http.ResponseWriter, req *http.Request) {
 func writeConfigHandler(cfgPath string) func(w http.ResponseWriter, req *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		cfg := dbConfig{
+		cfg := &dbConfig{
 			req.FormValue("driver"),
 			req.FormValue("host"),
 			req.FormValue("port"),
@@ -108,15 +108,15 @@ func writeConfigHandler(cfgPath string) func(w http.ResponseWriter, req *http.Re
 	}
 }
 
-func writeConfig(cfgPath string, cfg dbConfig) error {
-	cfgYaml, err := yaml.Marshal(map[string]dbConfig{"database": cfg})
+func writeConfig(cfgPath string, cfg *dbConfig) error {
+	cfgYaml, err := yaml.Marshal(map[string]*dbConfig{"database": cfg})
 	if err != nil {
 		return err
 	}
 	return ioutil.WriteFile(cfgPath, cfgYaml, 0644)
 }
 
-func validateDatabase(cfg dbConfig) bool {
+func validateDatabase(cfg *dbConfig) bool {
 	switch cfg.Driver {
 	case "sqlite3":
 		return validateSqlite3(cfg)
@@ -129,11 +129,20 @@ func validateDatabase(cfg dbConfig) bool {
 	}
 }
 
-func validateSqlite3(cfg dbConfig) bool {
+func validateSqlite3(cfg *dbConfig) bool {
+	if cfg.Path == "" {
+		cfg.Path = "disgo.sqlite3"
+	}
 	return true
 }
 
-func validatePostgresql(cfg dbConfig) bool {
+func validatePostgresql(cfg *dbConfig) bool {
+	if cfg.Host == "" {
+		cfg.Host = "127.0.0.1"
+	}
+	if cfg.Port == "" {
+		cfg.Port = "5432"
+	}
 	db, err := sqlx.Connect("postgres",
 		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Password))
 	if err != nil {
@@ -145,7 +154,13 @@ func validatePostgresql(cfg dbConfig) bool {
 	return true
 }
 
-func validateMysql(cfg dbConfig) bool {
+func validateMysql(cfg *dbConfig) bool {
+	if cfg.Host == "" {
+		cfg.Host = "127.0.0.1"
+	}
+	if cfg.Port == "" {
+		cfg.Port = "3306"
+	}
 	db, err := sqlx.Connect("mysql",
 		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Password))
 	if err != nil {

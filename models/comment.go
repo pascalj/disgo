@@ -1,9 +1,9 @@
 package models
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/ungerik/go-gravatar"
 	"net/mail"
 	"time"
@@ -17,7 +17,7 @@ type Comment struct {
 	Name     string `binding:"required" form:"name"`
 	Body     string `binding:"required" form:"body"`
 	Url      string `binding:"required" form:"url"`
-	ClientIp string `form:"-"`
+	ClientIp string `form:"-" db:"clientIp"`
 	Approved bool   `form:"-"`
 }
 
@@ -73,29 +73,26 @@ func (c *Comment) Validate() (bool, map[string]string) {
 	return (len(errors) == 0), errors
 }
 
-func (c *Comment) Save(db *sql.DB) error {
-	var stmt *sql.Stmt
+func (c *Comment) Save(db *sqlx.DB) error {
 	var err error
 	if c.Id != 0 {
-		stmt, err = db.Prepare(`
+		_, err = db.Exec(`
 			UPDATE comments SET
-			Email = ?, Name = ?, Body = ?, Created = ?, Url = ?, ClientIp = ?, Approved = ? WHERE Id = ?`)
+			Email = ?, Name = ?, Body = ?, Created = ?, Url = ?, ClientIp = ?, Approved = ? WHERE Id = ?`,
+			c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved, c.Id)
 		if err != nil {
 			return err
 		}
-		_, err = stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved, c.Id)
 	} else {
-		stmt, err = db.Prepare(`
+		res, err := db.Exec(`
 			INSERT INTO
 			comments(Email, Name, Body, Created, Url, ClientIp, Approved)
-			VALUES(?, ?, ?, ?, ?, ?, ?)`)
+			VALUES(?, ?, ?, ?, ?, ?, ?)`,
+			c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
 		if err != nil {
 			return err
 		}
-		res, err := stmt.Exec(c.Email, c.Name, c.Body, c.Created, c.Url, c.ClientIp, c.Approved)
-		if err != nil {
-			return err
-		}
+
 		lastId, err := res.LastInsertId()
 		if err != nil {
 			return err
@@ -108,176 +105,84 @@ func (c *Comment) Save(db *sql.DB) error {
 	return nil
 }
 
-func (c *Comment) Delete(db *sql.DB) error {
-	stmt, err := db.Prepare(`
+func (c *Comment) Delete(db *sqlx.DB) error {
+	_, err := db.Exec(`
 		DELETE FROM
 		comments
-		WHERE id = ?`)
+		WHERE id = ?`, c.Id)
 	if err != nil {
 		return err
 	}
-
-	_, err = stmt.Exec(c.Id)
-	return err
+	return nil
 }
 
-func GetComment(db *sql.DB, id int) *Comment {
-	row := db.QueryRow("SELECT * FROM comments WHERE Id = ?", id)
-	comment, err := scanComment(row)
+func GetComment(db *sqlx.DB, id int) *Comment {
+	comment := &Comment{}
+	err := db.Get(comment, "SELECT * FROM comments WHERE Id = ?", id)
 	if err != nil {
 		return nil
-	} else {
-		return comment
 	}
+	return comment
 }
 
-func UnapprovedComments(db *sql.DB) []Comment {
-	comments := make([]Comment, 0)
-	rows, err := db.Query("SELECT * FROM comments WHERE (Approved = 0)")
-	if err != nil {
-		logErr(err, "Could not load comments:")
-		return comments
-	}
-	defer rows.Close()
-	for rows.Next() {
-		comment := Comment{}
-		err := rows.Scan(
-			&comment.Id,
-			&comment.Created,
-			&comment.Email,
-			&comment.Name,
-			&comment.Body,
-			&comment.Url,
-			&comment.ClientIp,
-			&comment.Approved)
-		if err != nil {
-			logErr(err, "Error mapping comment:")
-		}
-		comments = append(comments, comment)
-	}
-	err = rows.Err()
-	if err != nil {
-		logErr(err, "Could not read comments")
-	}
-	return comments
-}
-
-func ApprovedComments(db *sql.DB, url string, email string) []Comment {
-	rows, err := db.Query("SELECT * FROM comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
+func UnapprovedComments(db *sqlx.DB) []Comment {
+	comments := []Comment{}
+	err := db.Select(&comments, "SELECT * FROM comments WHERE (Approved = 0)")
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return nil
 	}
-	defer rows.Close()
-	comments, err := scanComments(rows)
+	return comments
+}
 
-	err = rows.Err()
+func ApprovedComments(db *sqlx.DB, url string, email string) []Comment {
+	comments := []Comment{}
+	err := db.Select(&comments, "SELECT * FROM comments WHERE (Approved = 1 OR Email = ?) AND Url = ?", email, url)
 	if err != nil {
-		logErr(err, "Could not read comments")
+		logErr(err, "Could not load comments:")
+		return nil
 	}
 	return comments
 }
 
-func UnapprovedCommentsCount(db *sql.DB) (int, error) {
+func UnapprovedCommentsCount(db *sqlx.DB) (int, error) {
 	var count int
 	err := db.QueryRow("SELECT * FROM comments WHERE Approved<>1").Scan(&count)
 	return count, err
 }
 
-func AllComments(db *sql.DB, url string) []Comment {
-	comments := make([]Comment, 0)
-	rows, err := db.Query("SELECT * FROM comments WHERE Url = ?", url)
+func AllComments(db *sqlx.DB, url string) []Comment {
+	comments := []Comment{}
+	err := db.Get(&comments, "SELECT * FROM comments WHERE Url = ?", url)
 	if err != nil {
 		logErr(err, "Could not load comments:")
-		return comments
-	}
-	defer rows.Close()
-	for rows.Next() {
-		comment := Comment{}
-		err := rows.Scan(
-			&comment.Id,
-			&comment.Created,
-			&comment.Email,
-			&comment.Name,
-			&comment.Body,
-			&comment.Url,
-			&comment.ClientIp,
-			&comment.Approved)
-		if err != nil {
-			logErr(err, "Error mapping comment:")
-		}
-		comments = append(comments, comment)
-	}
-	err = rows.Err()
-	if err != nil {
-		logErr(err, "Could not read comments")
 	}
 	return comments
 }
 
-func logErr(err error, description string) {
-	fmt.Println(description, err)
-}
-
-func AllCommentsPaginated(db *sql.DB, page int) ([]Comment, int) {
-	rows, err := db.Query("SELECT * FROM comments ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
+func AllCommentsPaginated(db *sqlx.DB, page int) ([]Comment, int) {
+	comments := []Comment{}
+	err := db.Select(&comments, "SELECT * FROM comments ORDER BY Created DESC LIMIT 10 OFFSET ?", page*10)
 	if err != nil {
 		logErr(err, "Could not load comments:")
 		return nil, 0
 	}
-	defer rows.Close()
-	comments, err := scanComments(rows)
 
-	err = rows.Err()
-	if err != nil {
-		logErr(err, "Could not read comments")
-	}
-	countRows, err := db.Query("SELECT CEIL(COUNT(*)/10) FROM comments")
-	defer countRows.Close()
+	row := db.QueryRow("SELECT COUNT(*)/10 FROM comments")
+	var count int
+	err = row.Scan(&count)
 	if err != nil {
 		logErr(err, "Could not find comment pages count:")
 		return comments, 0
 	}
-	pages := 1
-	if countRows.Next() {
-		countRows.Scan(&pages)
+
+	if err != nil {
+		logErr(err, "Could not find comment pages count:")
+		return comments, 0
 	}
-	return comments, pages
+	return comments, count
 }
 
-func scanComment(row *sql.Row) (*Comment, error) {
-	comment := Comment{}
-	err := row.Scan(
-		&comment.Id,
-		&comment.Created,
-		&comment.Email,
-		&comment.Name,
-		&comment.Body,
-		&comment.Url,
-		&comment.ClientIp,
-		&comment.Approved)
-	return &comment, err
-}
-
-func scanComments(rows *sql.Rows) ([]Comment, error) {
-	comments := make([]Comment, 0)
-	for rows.Next() {
-		comment := Comment{}
-		err := rows.Scan(
-			&comment.Id,
-			&comment.Created,
-			&comment.Email,
-			&comment.Name,
-			&comment.Body,
-			&comment.Url,
-			&comment.ClientIp,
-			&comment.Approved)
-		if err != nil {
-			return comments, err
-		} else {
-			comments = append(comments, comment)
-		}
-	}
-
-	return comments, nil
+func logErr(err error, description string) {
+	fmt.Println(description, err)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/pascalj/disgo/models"
 	"github.com/pascalj/disgo/service"
 	"log"
+	"net"
 	"net/http"
 	"os"
 )
@@ -42,10 +43,10 @@ func main() {
 	if port == "" {
 		port = "3000"
 	}
-	err = http.ListenAndServe(host+":"+port, app.Router)
-	if err != nil {
-		log.Fatal("Unable to start Disgo:", err)
-	}
+	listener, err := net.Listen("tcp", host+":"+port)
+	checkErr(err, "Unable to listen on port "+port)
+
+	http.Serve(listener, app.Router)
 }
 
 func checkErr(err error, description string) {

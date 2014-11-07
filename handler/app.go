@@ -1,10 +1,12 @@
 package handler
 
 import (
-	"database/sql"
+	"errors"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pascalj/disgo/models"
@@ -12,12 +14,13 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // App stores the context.
 type App struct {
 	Router       *mux.Router
-	Db           *sql.DB
+	Db           *sqlx.DB
 	Config       models.Config
 	SessionStore sessions.Store
 	Templates    map[string]*template.Template
@@ -84,7 +87,26 @@ func (app *App) SetRoutes() {
 
 // Connect the DB and store the db pool reference.
 func (app *App) ConnectDb() error {
-	db, err := sql.Open(app.Config.Database.Driver, app.Config.Database.Access)
+	var db *sqlx.DB
+	var err error
+	switch app.Config.Database.Driver {
+	case "sqlite3":
+		db, err = sqlx.Connect(app.Config.Database.Driver, app.Config.Database.Path)
+		break
+	case "postgresql":
+	case "mysql":
+		db, err = sqlx.Connect(app.Config.Database.Driver,
+			fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+				app.Config.Database.Host,
+				app.Config.Database.Port,
+				app.Config.Database.Username,
+				app.Config.Database.Password,
+				app.Config.Database.Password))
+		break
+	default:
+		err = errors.New("Missing or wrong database configuration.")
+	}
+
 	if err != nil {
 		return err
 	}
@@ -93,12 +115,18 @@ func (app *App) ConnectDb() error {
 		return err
 	}
 	app.Db = db
-	statements, err := ioutil.ReadFile("data/sql/schema." + app.Config.Database.Driver + ".sql")
+	sqlFile, err := ioutil.ReadFile("data/sql/schema." + app.Config.Database.Driver + ".sql")
 	if err != nil {
 		return err
 	}
-	if _, err := db.Exec(string(statements)); err != nil {
-		return err
+	statements := strings.Split(string(sqlFile), ";")
+	for _, statement := range statements {
+		if strings.Trim(statement, " \t\n\r") == "" {
+			continue
+		}
+		if _, err := db.Exec(string(statement)); err != nil {
+			return err
+		}
 	}
 	return nil
 }

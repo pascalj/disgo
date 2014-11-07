@@ -17,8 +17,13 @@ type Config struct {
 		Prefix    string
 	}
 	Database struct {
-		Driver string
-		Access string
+		Driver   string
+		Host     string
+		Port     string
+		Username string
+		Password string
+		Database string
+		Path     string
 	}
 	Rate_Limit struct {
 		Enable       bool

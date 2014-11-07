@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/pascalj/disgo/models"
 	"github.com/russross/blackfriday"
 	"github.com/ungerik/go-gravatar"
@@ -226,7 +226,7 @@ func renderErrors(w http.ResponseWriter, errors map[string]string, code int) {
 }
 
 // PaginatedComments loads the paginated comments on a page. Default page is 0.
-func paginatedComments(db *sql.DB, page int) *models.PaginatedComments {
+func paginatedComments(db *sqlx.DB, page int) *models.PaginatedComments {
 	comments, pages := models.AllCommentsPaginated(db, page)
 	return &models.PaginatedComments{pages, page, 10, comments}
 }
