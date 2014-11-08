@@ -1,0 +1,27 @@
+CREATE TABLE IF NOT EXISTS comments (
+  id SERIAL,
+  created BIGINT DEFAULT NULL,
+  email VARCHAR(255) DEFAULT NULL,
+  name VARCHAR(255) DEFAULT NULL,
+  body TEXT,
+  url VARCHAR(255) DEFAULT NULL,
+  clientIp VARCHAR(255) DEFAULT NULL,
+  approved SMALLINT DEFAULT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL,
+  created BIGINT DEFAULT NULL,
+  email VARCHAR(255) DEFAULT NULL,
+  password VARCHAR(255) DEFAULT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS config (
+  name varchar(255) NOT NULL,
+  value varchar(255) DEFAULT NULL,
+  PRIMARY KEY (name)
+);
+
+CREATE INDEX ON comments (url);
