@@ -1,0 +1,133 @@
+<div class="row settings">
+  <div class="large-6 columns">
+
+    <h3>Settings</h3>
+
+    <fieldset>
+      <legend>General</legend>
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="general-origin" class="right inline">Whitelistet sites</label>
+        </div>
+        <div class="large-4 columns">
+          <textarea placeholder="http://example.com" id="general-origin">{{.config.General.Origin | splitNl}}</textarea>
+          <p>For each website that should be allowed to post comments to Disgo, add a line with the domain in the form 'http://your-domain.com'. This does <em>not</em> prevent anyone from posting for other Domains, but browsers will refuse to load Disgo on sites not in the list above.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="large-4 large-offset-2 columns">
+          <input id="general-approval" type="checkbox" name="general[approval]" value="1" {{if .config.General.Approval}}checked="checked"{{end}}>
+          <label for="general-approval">Enable Admin Approval</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="large-4 large-offset-2 columns">
+          <input id="general-markdown" type="checkbox" name="general[markdown]" value="1" {{if .config.General.Markdown}}checked="checked"{{end}}>
+          <label for="general-markdown">Allow <a href="http://daringfireball.net/projects/markdown/">Markdown</a> in comments</label>
+        </div>
+      </div>
+    </fieldset>
+
+
+    <fieldset>
+      <legend>Email notifications</legend>
+
+      <div class="row">
+        <div class="large-4 large-offset-2 columns">
+          <input id="email-notify" type="checkbox" name="email[notify]" value="1" {{if .config.Email.Notify}}checked="checked"{{end}}>
+          <label for="email-notify">Send notifications</label>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="email-from" class="right inline">Sender e-mail address</label>
+        </div>
+        <div class="large-4 columns">
+          <input type="text" id="email-from" value="{{.config.Email.From}}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="email-to" class="right inline">Recipient e-mail address</label>
+        </div>
+        <div class="large-4 columns">
+          <input type="text" id="email-to" value="{{.config.Email.To | splitComma}}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="email-to" class="right inline">SMTP username</label>
+        </div>
+        <div class="large-4 columns">
+          <input type="text" id="email-username" value="{{.config.Email.Username}}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="email-password" class="right inline">SMTP password</label>
+        </div>
+        <div class="large-4 columns">
+          <input type="password" id="email-password" value="{{.config.Email.Password}}">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="email-password" class="right inline">SMTP host and port</label>
+        </div>
+        <div class="large-4 columns">
+          <div class="row">
+            <div class="small-4 columns">
+              <input type="text" id="email-host" placeholder="host" value="{{.config.Email.Host}}">
+            </div>
+            <div class="small-2 columns">
+              <input type="text" id="email-port" value="{{.config.Email.Port}}">
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+
+    <fieldset>
+      <legend>Advanced</legend>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="right-label" class="right inline">Template path</label>
+        </div>
+        <div class="large-4 columns">
+          <input type="text" id="general-templates" placeholder="Leave empty for default templates" value="{{.config.General.Templates}}">
+          <p>You can copy the default templates, change them to your needs and change the template path.</p>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="small-2 columns">
+          <label for="general-prefix" class="right inline">Path prefix</label>
+        </div>
+        <div class="large-4 columns">
+          <div class="row collapse">
+            <div class="large-3 columns">
+              <span class="prefix">http://example.com/</span>
+            </div>
+            <div class="large-3 columns">
+              <input type="text" id="general-prefix" name="general[prefix]" value="{{.config.General.Prefix}}">
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-6 columns">
+              <p>Useful if you're not hosting Disgo on the root of your domain.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </fieldset>
+  </div>
+</div>

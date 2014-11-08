@@ -76,6 +76,14 @@ func (app *App) viewhelpers() template.FuncMap {
 			output := blackfriday.MarkdownCommon([]byte(args[0]))
 			return template.HTML(output)
 		},
+		"splitComma": func(args ...[]string) template.HTML {
+			output := strings.Join(args[0], ", ")
+			return template.HTML(output)
+		},
+		"splitNl": func(args ...[]string) template.HTML {
+			output := strings.Join(args[0], "\n")
+			return template.HTML(output)
+		},
 		"linebreak": func(args ...string) template.HTML {
 			return template.HTML(strings.Replace(template.HTMLEscapeString(args[0]), "\n", "<br>", -1))
 		},

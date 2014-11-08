@@ -78,6 +78,10 @@ func GetIndex(w http.ResponseWriter, req *http.Request, app *App) {
 	render(w, "index", map[string]interface{}{"base": strings.Join(base, ""), "hideNav": true}, app)
 }
 
+func GetSettings(w http.ResponseWriter, req *http.Request, app *App) {
+	render(w, "admin/settings", map[string]interface{}{"config": app.Config}, app)
+}
+
 // PostLogout logs the user out and redirects to the login page.
 func PostLogout(w http.ResponseWriter, req *http.Request, app *App) {
 	session, _ := app.SessionStore.Get(req, SessionName)

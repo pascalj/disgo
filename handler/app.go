@@ -75,6 +75,7 @@ func (app *App) SetRoutes() {
 	r.Handle("/comments/{id}", app.handle(DestroyComment).addMiddleware(requireLogin)).Methods("DELETE")
 
 	r.Handle("/admin/", app.handle(AdminIndex).addMiddleware(requireLogin)).Methods("GET", "HEAD")
+	r.Handle("/admin/settings", app.handle(GetSettings).addMiddleware(requireLogin)).Methods("GET", "HEAD")
 	r.Handle("/login", app.handle(GetLogin)).Methods("GET", "HEAD")
 	r.Handle("/session", app.handle(PostSession)).Methods("POST")
 	r.Handle("/logout", app.handle(PostLogout).addMiddleware(requireLogin)).Methods("POST")
