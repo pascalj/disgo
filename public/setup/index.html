@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html ng-app="setupApp">
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -22,32 +22,15 @@
         <div class="row">
             <div class="large-6 columns">
               <p>Welcome to Disgo! This form will help you to setup your database connection. Choose "SQLite" if you are unsure.</p>
-              <form>
-                <fieldset>
-                  <legend>Database setup</legend>
-                  <div class="row">
-                    <div class="large-12 columns">
-                      <label>Database type
-                        <select id="database">
-                          <option value="sqlite3">SQLite</option>
-                          <option value="postgresql">PostgreSQL</option>
-                          <option value="mysql">MySQL</option>
-                        </select>
-                      </label>
-                    </div>
-                  </div>
+              <form ng-controller="DatabaseController as dbCtrl">
+                <dl class="tabs" data-tab>
+                  <dd ng-class="{active:isActiveTab('sqlite3')}" ng-click="changeDriver('sqlite3')"><a href="#">Sqlite</a></dd>
+                  <dd ng-class="{active:isActiveTab('postgresql')}" ng-click="changeDriver('postgresql')"><a href="#">PostgreSQL</a></dd>
+                  <dd ng-class="{active:isActiveTab('mysql')}" ng-click="changeDriver('mysql')"><a href="#">MySQL</a></dd>
+                </dl>
 
-                  <div class="row wrong-data">
-                    <div class="large-6 columns">
-                      <div data-alert class="alert-box warning">
-                        Could not connect to the database. Please check the data below.
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr>
-
-                  <div id="sqlite3">
+                <div class="tabs-content">
+                  <div id="panel1" class="content" ng-class="{active:isActiveTab('sqlite3')}">
                     <h6>SQLite Setup</h6>
                     <div class="row">
                       <div class="large-12 columns">
@@ -58,82 +41,86 @@
                     </div>
                   </div>
 
-                  <div id="postgresql">
+                  <div id="panel2" class="content" ng-class="{active:isActiveTab('postgresql')}">
                     <h6>PostgreSQL Setup</h6>
+
+                    <div class="alert-box alert" ng-hide="valid">
+                      Could not establish a connection to the database. Please check the credentials below.
+                    </div>
+
                     <div class="row">
                       <div class="large-4 columns">
                         <label>Host
-                          <input type="text"  class="host" placeholder="127.0.0.1" />
+                          <input type="text"  class="host" placeholder="127.0.0.1" ng-model="database.host"/>
                         </label>
                       </div>
                       <div class="large-2 columns">
                         <label>Port
-                          <input type="text"  class="port" placeholder="5432" />
+                          <input type="text"  class="port" placeholder="5432"  ng-model="database.port"/>
                         </label>
                       </div>
                     </div>
                     <div class="row">
                       <div class="large-3 columns">
                         <label>Username
-                          <input  class="username" type="text"/>
+                          <input  class="username" type="text" ng-model="database.username"/>
                         </label>
                       </div>
                       <div class="large-3 columns">
                         <label>Password
-                          <input  class="password" type="password" />
+                          <input  class="password" type="password" ng-model="database.password"/>
                         </label>
                       </div>
                     </div>
                     <div class="row">
                       <div class="large-6 columns">
                         <label>Database name
-                          <input  class="database" type="text"/>
+                          <input  class="database" type="text" ng-model="database.database"/>
                         </label>
                       </div>
                     </div>
                   </div>
 
-                  <div id="mysql">
+                  <div id="panel3" class="content" ng-class="{active:isActiveTab('mysql')}">
                     <h6>MySQL Setup</h6>
+
+                    <div class="alert-box alert" ng-hide="valid">
+                      Could not establish a connection to the database. Please check the credentials below.
+                    </div>
+
                     <div class="row">
                       <div class="large-4 columns">
                         <label>Host
-                          <input type="text" class="host" placeholder="127.0.0.1" />
+                          <input type="text" class="host" placeholder="127.0.0.1" ng-model="database.host" />
                         </label>
                       </div>
                       <div class="large-2 columns">
                         <label>Port
-                          <input  class="port" type="text" placeholder="3306" />
+                          <input  class="port" type="text" placeholder="3306" ng-model="database.port" />
                         </label>
                       </div>
                     </div>
                     <div class="row">
                       <div class="large-3 columns">
                         <label>Username
-                          <input class="username" type="text"/>
+                          <input class="username" type="text" ng-model="database.username"/>
                         </label>
                       </div>
                       <div class="large-3 columns">
                         <label>Password
-                          <input  class="password" type="password" />
+                          <input  class="password" type="password" ng-model="database.password" />
                         </label>
                       </div>
                     </div>
                     <div class="row">
                       <div class="large-6 columns">
                         <label>Database name
-                          <input  class="database" type="text"/>
+                          <input  class="database" type="text" ng-model="database.database"/>
                         </label>
                       </div>
                     </div>
                   </div>
-
-                  <div class="row">
-                    <div class="large-6 columns">
-                      <button id="finish" class="right radius" disabled>Finish</button>
-                    </div>
-                  </div>
-                </fieldset>
+                </div>
               </form>
             </div>
         </div>
@@ -142,6 +129,8 @@
           <a href="http://github.com/pascalj/disgo">Disgo</a> by <a href="http://www.pascalj.de">Pascal Jungblut</a> — MIT licence
         </footer>
         <script src="js/jquery.min.js"></script>
-        <script src="js/setup.js"></script>
+        <script src="js/angular.min.js"></script>
+        <script src="js/angular-resource.min.js"></script>
+        <script src="js/app.js"></script>
     </body>
 </html>

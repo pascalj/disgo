@@ -2,6 +2,8 @@ package handler
 
 import (
 	"code.google.com/p/go.crypto/bcrypt"
+	"encoding/json"
+	"fmt"
 	"github.com/pascalj/disgo/models"
 	"net/http"
 	"strconv"
@@ -88,4 +90,20 @@ func PostLogout(w http.ResponseWriter, req *http.Request, app *App) {
 	session.Values["userId"] = nil
 	session.Save(req, w)
 	http.Redirect(w, req, app.Config.General.Prefix+"/login", http.StatusFound)
+}
+
+func GetConfig(w http.ResponseWriter, req *http.Request, app *App) {
+	output, _ := json.Marshal(app.Config)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(output)
+}
+
+func PostConfig(w http.ResponseWriter, req *http.Request, app *App) {
+	var cfg models.Config
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(&cfg)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(cfg)
 }

@@ -82,6 +82,10 @@ func (app *App) SetRoutes() {
 	r.Handle("/register", app.handle(GetRegister)).Methods("GET", "HEAD")
 	r.Handle("/user", app.handle(PostUser)).Methods("POST")
 
+	// admin API
+	r.Handle("/api/v1/config", app.handle(GetConfig).addMiddleware(requireLogin)).Methods("GET", "HEAD")
+	r.Handle("/api/v1/config", app.handle(PostConfig)).Methods("POST")
+
 	r.Handle("/", app.handle(GetIndex)).Methods("GET", "HEAD")
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("public/")))
 }

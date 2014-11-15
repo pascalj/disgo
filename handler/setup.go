@@ -161,8 +161,11 @@ func validateMysql(cfg *dbConfig) bool {
 	if cfg.Port == "" {
 		cfg.Port = "3306"
 	}
+	if cfg.Database == "" {
+		return false
+	}
 	db, err := sqlx.Connect("mysql",
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Password))
+		fmt.Sprintf("%s:%s@(%s:%s)/%s", cfg.Username, cfg.Password, cfg.Host, cfg.Port, cfg.Database))
 	if err != nil {
 		return false
 	}
