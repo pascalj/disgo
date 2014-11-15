@@ -66,3 +66,8 @@ p {
 hr {
   margin-top: 5px;
 }
+
+.tabs dd.active a {
+  color: #fff;
+  background-color: #5da423;
+}
